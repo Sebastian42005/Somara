@@ -1,0 +1,17 @@
+<div
+  class="rounded-xl p-4 flex flex-col shadow"
+  [ngStyle]="{ 'background-color': entry().color}">
+  <span class="font-bold">{{ entry().name }}</span>
+  <div class="flex flex-row items-center gap-2">
+    <mat-icon>person</mat-icon>
+    <span>{{ entry().teacher.name }}</span>
+  </div>
+  <div class="flex flex-row items-center gap-2">
+    <mat-icon>hourglass_bottom</mat-icon>
+    <span>{{ getDurationInMinutes(entry().start, entry().end) }} Min</span>
+  </div>
+  <div class="flex flex-row items-center gap-2">
+    <mat-icon>schedule</mat-icon>
+    <span>{{ entry().start | time }} - {{ entry().end | time }}</span>
+  </div>
+</div>

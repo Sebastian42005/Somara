@@ -1,0 +1,40 @@
+<div class="flex flex-col primary-bg m-10 p-5 rounded-2xl shadow-2xl">
+  <div class="flex flex-row gap-4 ml-10">
+    <button class="button-rounded">
+      <mat-icon>arrow_back_ios</mat-icon>
+      Vorige Woche
+    </button>
+    <button class="button-rounded">
+      <mat-icon>arrow_forward_ios</mat-icon>
+      Nächste Woche
+    </button>
+  </div>
+  <div class="grid grid-cols-7 gap-4 mt-4">
+    @for (currentDay of currentWeek; track currentDay.weekday) {
+      <div class="text-center py-3 px-1">
+        <h5>{{ currentDay.weekday | weekday }}</h5>
+        <span>{{ currentDay.date }}</span>
+      </div>
+    }
+  </div>
+
+  @for (section of timeOfDaySections; track section.key) {
+    <div class="mt-7">
+      <div class="flex items-center justify-center gap-2 text-xl font-semibold">
+        <mat-icon>{{ section.icon }}</mat-icon>
+        <span>{{ section.label }}</span>
+      </div>
+      <div class="h-px w-full bg-(--somara-text) opacity-40 my-3 mb-4"></div>
+
+      <div class="grid grid-cols-7 gap-4">
+        @for (currentDay of currentWeek; track currentDay.weekday) {
+          <div class="flex flex-col gap-3 min-h-4">
+            @for (entry of getEntriesForDayAndTimeOfDay(currentDay.weekday, section.key); track entry.start.getTime() + '-' + entry.name) {
+              <app-timetable-entry [entry]="entry"></app-timetable-entry>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

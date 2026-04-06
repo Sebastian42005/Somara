@@ -1,0 +1,196 @@
+@font-face {
+  font-family: "BIZ UDPMincho";
+  src: url("../fonts/BIZ_UDPMincho/BIZUDPMincho-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "BIZ UDPMincho";
+  src: url("../fonts/BIZ_UDPMincho/BIZUDPMincho-Bold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  /* Global mode flag (informational): system | light | dark */
+  --somara-theme-mode: system;
+  --somara-font-family: "BIZ UDPMincho", "Times New Roman", serif;
+
+  /* Typography scale (1.25 ratio) */
+  --somara-fs--2: 0.64rem;
+  --somara-fs--1: 0.8rem;
+  --somara-fs-0: 1rem;
+  --somara-fs-1: 1.25rem;
+  --somara-fs-2: 1.5rem;
+  --somara-fs-3: 1.75rem;
+  --somara-fs-4: 2rem;
+  --somara-fs-5: 2.25rem;
+  --somara-fs-6: 2.5rem;
+
+  /* Light palette */
+  --somara-primary-light: #c1b8af;
+  --somara-secondary-light: #005f6a;
+  --somara-background-light: #f8f8f8;
+  --somara-text-light: #292929;
+
+  /* Dark palette */
+  --somara-primary-dark: #a89d91;
+  --somara-secondary-dark: #005f6a;
+  --somara-background-dark: #333333;
+  --somara-text-dark: #eeeeee;
+
+  /* Active tokens (default to light; browser preference can override below) */
+  --somara-primary: var(--somara-primary-light);
+  --somara-secondary: var(--somara-secondary-light);
+  --somara-background: var(--somara-background-light);
+  --somara-text: var(--somara-text-light);
+
+  color-scheme: light dark;
+}
+
+/* Default mode: follow browser/OS preference */
+@media (prefers-color-scheme: light) {
+  :root {
+    --somara-primary: var(--somara-primary-dark);
+    --somara-secondary: var(--somara-secondary-dark);
+    --somara-background: var(--somara-background-dark);
+    --somara-text: var(--somara-text-dark);
+  }
+}
+
+/* Manual global override via document.documentElement.dataset.theme */
+:root[data-theme="light"] {
+  --somara-theme-mode: light;
+  --somara-primary: var(--somara-primary-light);
+  --somara-secondary: var(--somara-secondary-light);
+  --somara-background: var(--somara-background-light);
+  --somara-text: var(--somara-text-light);
+}
+
+:root[data-theme="dark"] {
+  --somara-theme-mode: dark;
+  --somara-primary: var(--somara-primary-dark);
+  --somara-secondary: var(--somara-secondary-dark);
+  --somara-background: var(--somara-background-dark);
+  --somara-text: var(--somara-text-dark);
+}
+
+body {
+  background-color: var(--somara-background);
+  color: var(--somara-text);
+  font-family: var(--somara-font-family);
+  font-size: var(--somara-fs-0);
+  line-height: 1.5;
+}
+
+h1 {
+  font-size: var(--somara-fs-6);
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: var(--somara-fs-5);
+  line-height: 1.15;
+}
+
+h3 {
+  font-size: var(--somara-fs-4);
+  line-height: 1.2;
+}
+
+h4 {
+  font-size: var(--somara-fs-3);
+  line-height: 1.25;
+}
+
+h5 {
+  font-size: var(--somara-fs-2);
+  line-height: 1.3;
+}
+
+h6 {
+  font-size: var(--somara-fs-1);
+  line-height: 1.35;
+}
+
+p,
+li,
+blockquote,
+label,
+input,
+textarea,
+select,
+button,
+a {
+  font-size: var(--somara-fs-0);
+}
+
+small {
+  font-size: var(--somara-fs--1);
+}
+
+// default tag designs
+
+a {
+  cursor: pointer;
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 50% 100%;
+  background-size: 0 2px;
+  transition: background-size 220ms ease;
+}
+
+a:hover,
+a:focus-visible {
+  background-size: 100% 2px;
+}
+
+button {
+  cursor: pointer;
+}
+
+// Custom Class Designs
+
+.primary-bg {
+  background-color: var(--somara-primary);
+}
+
+.primary-color {
+  color: var(--somara-primary);
+}
+
+.button-rounded {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: .5rem;
+  border: 2px solid var(--somara-secondary);
+  border-radius: 2rem;
+  padding: 0.625rem 1.25rem;
+  color: var(--somara-secondary);
+  background: transparent;
+  font-weight: normal;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--somara-background);
+    background-color: var(--somara-secondary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--somara-text);
+    outline-offset: 3px;
+  }
+}
+
+mat-icon {
+  width: 1rem !important;
+  height: 1rem !important;
+  font-size: 1rem !important;
+}
