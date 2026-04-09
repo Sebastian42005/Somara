@@ -1,0 +1,44 @@
+.timetable-date-field {
+  --mat-form-field-outlined-outline-width: 2px;
+  --mat-form-field-outlined-focus-outline-width: 3px;
+  --mat-form-field-outlined-outline-color: var(--somara-secondary);
+  --mat-form-field-outlined-hover-outline-color: var(--somara-secondary);
+  --mat-form-field-outlined-focus-outline-color: var(--somara-secondary);
+  --mat-form-field-outlined-label-text-color: var(--somara-secondary);
+  --mat-form-field-outlined-hover-label-text-color: var(--somara-secondary);
+  --mat-form-field-outlined-focus-label-text-color: var(--somara-secondary);
+  --mat-form-field-outlined-input-text-color: var(--somara-secondary);
+  --mat-form-field-outlined-caret-color: var(--somara-secondary);
+}
+
+.reset-date-button {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 2px solid var(--somara-secondary);
+  color: var(--somara-secondary);
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 140ms ease, transform 120ms ease, opacity 120ms ease;
+
+  &:hover:enabled {
+    background-color: color-mix(in srgb, var(--somara-secondary) 14%, transparent);
+  }
+
+  &:active:enabled {
+    transform: translateY(1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--somara-text);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}

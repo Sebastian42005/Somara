@@ -15,7 +15,6 @@ import {
     NgStyle
   ],
   templateUrl: './timetable-entry.html',
-  styleUrl: './timetable-entry.scss',
 })
 export class TimetableEntryComponent {
   entry = input.required<TimetableEntry>();

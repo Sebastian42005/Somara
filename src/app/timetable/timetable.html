@@ -1,16 +1,38 @@
 <div class="flex flex-col primary-bg m-10 p-5 rounded-2xl shadow-2xl">
-  <div class="flex flex-row gap-4 ml-10">
-    <button class="button-rounded">
-      <mat-icon>arrow_back_ios</mat-icon>
-      Vorige Woche
-    </button>
-    <button class="button-rounded">
-      <mat-icon>arrow_forward_ios</mat-icon>
-      Nächste Woche
-    </button>
+  <div class="flex flex-row justify-between">
+    <div class="flex flex-wrap items-center gap-4 ml-10">
+      <button class="button-rounded" type="button" (click)="showPreviousWeek()">
+        <mat-icon>arrow_back_ios</mat-icon>
+        Vorige Woche
+      </button>
+      <button class="button-rounded" type="button" (click)="showNextWeek()">
+        <mat-icon>arrow_forward_ios</mat-icon>
+        Nächste Woche
+      </button>
+      <mat-form-field appearance="outline" class="timetable-date-field w-full max-w-50 -mb-5">
+        <mat-label>Tag auswählen</mat-label>
+        <input
+          matInput
+          [matDatepicker]="dayPicker"
+          [value]="selectedDate()"
+          (dateChange)="onDateSelected($event.value)">
+        <mat-datepicker-toggle matSuffix [for]="dayPicker"></mat-datepicker-toggle>
+        <mat-datepicker #dayPicker></mat-datepicker>
+      </mat-form-field>
+      @if (selectedDate() != null) {
+        <button
+          type="button"
+          class="reset-date-button"
+          (click)="clearDateSelection()"
+          aria-label="Datum zurücksetzen">
+          <mat-icon>restart_alt</mat-icon>
+        </button>
+      }
+    </div>
+    <button class="button-rounded">Eintrag erstellen</button>
   </div>
-  <div class="grid grid-cols-7 gap-4 mt-4">
-    @for (currentDay of currentWeek; track currentDay.weekday) {
+  <div class="grid gap-4 mt-4" [ngStyle]="daysGridStyle()">
+    @for (currentDay of visibleDays(); track currentDay.isoDate) {
       <div class="text-center py-3 px-1">
         <h5>{{ currentDay.weekday | weekday }}</h5>
         <span>{{ currentDay.date }}</span>
@@ -18,18 +40,20 @@
     }
   </div>
 
-  @for (section of timeOfDaySections; track section.key) {
-    <div class="mt-7">
+  @for (section of timeOfDaySections; track section.label) {
+    <div
+      class="mt-12 p-4 rounded-xl"
+      [ngStyle]="{ 'background-color': section.backgroundColor }">
       <div class="flex items-center justify-center gap-2 text-xl font-semibold">
         <mat-icon>{{ section.icon }}</mat-icon>
         <span>{{ section.label }}</span>
       </div>
       <div class="h-px w-full bg-(--somara-text) opacity-40 my-3 mb-4"></div>
 
-      <div class="grid grid-cols-7 gap-4">
-        @for (currentDay of currentWeek; track currentDay.weekday) {
+      <div class="grid gap-4" [ngStyle]="daysGridStyle()">
+        @for (currentDay of visibleDays(); track currentDay.isoDate) {
           <div class="flex flex-col gap-3 min-h-4">
-            @for (entry of getEntriesForDayAndTimeOfDay(currentDay.weekday, section.key); track entry.start.getTime() + '-' + entry.name) {
+            @for (entry of getEntriesForDayAndTimeOfDay(currentDay, section.key); track entry.start.getTime() + '-' + entry.name) {
               <app-timetable-entry [entry]="entry"></app-timetable-entry>
             }
           </div>

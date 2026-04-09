@@ -25,7 +25,7 @@ const applyThemeMode = (mode: ThemeMode) => {
 
 const getInitialThemeMode = (): ThemeMode => {
   const mode = window.SOMARA_THEME_MODE;
-  return mode === 'light' || mode === 'dark' || mode === 'system' ? mode : 'system';
+  return mode === 'light' || mode === 'dark' || mode === 'system' ? mode : 'light';
 };
 
 applyThemeMode(getInitialThemeMode());

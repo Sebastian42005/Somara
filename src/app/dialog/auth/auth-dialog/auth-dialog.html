@@ -1,0 +1,102 @@
+<mat-dialog-content>
+  <div
+    class="w-full mb-4 grid grid-cols-2 gap-1 rounded-xl border border-[var(--somara-secondary)] p-1">
+    <button
+      type="button"
+      class="button-base w-full"
+      [class.button-raised]="mode() === 'login'"
+      [class.button-stroked]="mode() !== 'login'"
+      [disabled]="isLoading()"
+      (click)="setMode('login')">
+      Login
+    </button>
+
+    <button
+      type="button"
+      class="button-base w-full"
+      [class.button-raised]="mode() === 'register'"
+      [class.button-stroked]="mode() !== 'register'"
+      [disabled]="isLoading()"
+      (click)="setMode('register')">
+      Register
+    </button>
+  </div>
+
+  @if (mode() === 'login') {
+    <form class="flex flex-col gap-3" [formGroup]="loginForm" (ngSubmit)="submit()" id="login-form">
+      <label class="flex flex-col gap-1.5" for="login-username">
+        <span class="text-sm font-medium text-[var(--somara-text)]">Username</span>
+        <input
+          id="login-username"
+          class="rounded-lg border-2 border-[var(--somara-secondary)] bg-[var(--somara-background)] px-3 py-2 text-[var(--somara-text)] outline-none transition focus:border-[var(--somara-secondary)] focus:ring-4 focus:ring-black/10"
+          type="text"
+          formControlName="username"
+          autocomplete="username" />
+      </label>
+
+      <label class="flex flex-col gap-1.5" for="login-password">
+        <span class="text-sm font-medium text-[var(--somara-text)]">Passwort</span>
+        <input
+          id="login-password"
+          class="rounded-lg border-2 border-[var(--somara-secondary)] bg-[var(--somara-background)] px-3 py-2 text-[var(--somara-text)] outline-none transition focus:border-[var(--somara-secondary)] focus:ring-4 focus:ring-black/10"
+          type="password"
+          formControlName="password"
+          autocomplete="current-password" />
+      </label>
+    </form>
+  } @else {
+    <form class="flex flex-col gap-3" [formGroup]="registerForm" (ngSubmit)="submit()" id="register-form">
+      <label class="flex flex-col gap-1.5" for="register-username">
+        <span class="text-sm font-medium text-[var(--somara-text)]">Username</span>
+        <input
+          id="register-username"
+          class="rounded-lg border-2 border-[var(--somara-secondary)] bg-[var(--somara-background)] px-3 py-2 text-[var(--somara-text)] outline-none transition focus:border-[var(--somara-secondary)] focus:ring-4 focus:ring-black/10"
+          type="text"
+          formControlName="username"
+          autocomplete="username" />
+      </label>
+
+      <label class="flex flex-col gap-1.5" for="register-password">
+        <span class="text-sm font-medium text-[var(--somara-text)]">Passwort</span>
+        <input
+          id="register-password"
+          class="rounded-lg border-2 border-[var(--somara-secondary)] bg-[var(--somara-background)] px-3 py-2 text-[var(--somara-text)] outline-none transition focus:border-[var(--somara-secondary)] focus:ring-4 focus:ring-black/10"
+          type="password"
+          formControlName="password"
+          autocomplete="new-password" />
+      </label>
+
+      <label class="flex flex-col gap-1.5" for="register-confirm-password">
+        <span class="text-sm font-medium text-[var(--somara-text)]">Passwort bestaetigen</span>
+        <input
+          id="register-confirm-password"
+          class="rounded-lg border-2 border-[var(--somara-secondary)] bg-[var(--somara-background)] px-3 py-2 text-[var(--somara-text)] outline-none transition focus:border-[var(--somara-secondary)] focus:ring-4 focus:ring-black/10"
+          type="password"
+          formControlName="confirmPassword"
+          autocomplete="new-password" />
+      </label>
+    </form>
+  }
+
+  @if (errorMessage()) {
+    <p class="mt-3 text-sm text-red-700">{{ errorMessage() }}</p>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="mt-3 flex gap-2">
+  <button
+    type="button"
+    class="button-base button-stroked min-w-32"
+    (click)="close()"
+    [disabled]="isLoading()">
+    Abbrechen
+  </button>
+
+  <button
+    type="submit"
+    class="button-base button-raised min-w-44"
+    [disabled]="isLoading()"
+    [attr.form]="mode() === 'login' ? 'login-form' : 'register-form'">
+    {{ mode() === 'login' ? 'Einloggen' : 'Account erstellen' }}
+  </button>
+</mat-dialog-actions>

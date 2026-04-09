@@ -1,12 +1,27 @@
 <div class="primary-bg w-full flex px-40 items-center justify-between h-20">
-  <img src="img.png" class="h-16 cursor-pointer">
+  <img src="img.png" class="h-16 cursor-pointer" routerLink="/" aria-label="Go to home">
   <div class="flex flex-row gap-10">
-    <a>Home</a>
-    <a>Classes</a>
-    <a href="timetable">Timetable</a>
-    <a>Pricing</a>
+    <a class="nav-link" routerLink="/" routerLinkActive="nav-link--active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+    <a class="nav-link" routerLink="/classes" routerLinkActive="nav-link--active">Classes</a>
+    <a class="nav-link" routerLink="/timetable" routerLinkActive="nav-link--active">Timetable</a>
+    <a class="nav-link" routerLink="/pricing" routerLinkActive="nav-link--active">Pricing</a>
   </div>
-  <button class="button-rounded">Login / Register</button>
+
+  @if (isAuthenticated()) {
+    <div class="flex items-center gap-3">
+      <button class="profile-menu-trigger" type="button" [matMenuTriggerFor]="userMenu" aria-label="Open user menu">
+        <app-profile-picture></app-profile-picture>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item type="button" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
+    </div>
+  } @else {
+    <button class="button-rounded" type="button" (click)="openAuthDialog()">Login / Register</button>
+  }
 </div>
 
 <router-outlet></router-outlet>

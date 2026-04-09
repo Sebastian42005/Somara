@@ -1,0 +1,152 @@
+@use 'sass:color';
+@use '@angular/material' as mat;
+
+$somara-primary-light: #c1b8af;
+$somara-secondary-light: #005f6a;
+$somara-background-light: #e8e6e4;
+$somara-text-light: #292929;
+
+$somara-primary-dark: #a89d91;
+$somara-secondary-dark: #005f6a;
+$somara-background-dark: #333333;
+$somara-text-dark: #eeeeee;
+
+$somara-warn: #b3261e;
+
+@function somara-contrast-color($value) {
+  @if color.channel($value, "lightness", $space: hsl) > 60% {
+    @return rgba(0, 0, 0, 0.87);
+  }
+
+  @return #fff;
+}
+
+@function somara-m2-palette($base) {
+  $s50: color.mix(white, $base, $weight: 88%);
+  $s100: color.mix(white, $base, $weight: 72%);
+  $s200: color.mix(white, $base, $weight: 56%);
+  $s300: color.mix(white, $base, $weight: 40%);
+  $s400: color.mix(white, $base, $weight: 24%);
+  $s500: $base;
+  $s600: color.mix(black, $base, $weight: 10%);
+  $s700: color.mix(black, $base, $weight: 18%);
+  $s800: color.mix(black, $base, $weight: 24%);
+  $s900: color.mix(black, $base, $weight: 32%);
+
+  $a100: color.mix(white, $base, $weight: 84%);
+  $a200: color.mix(white, $base, $weight: 68%);
+  $a400: color.mix(black, $base, $weight: 16%);
+  $a700: color.mix(black, $base, $weight: 26%);
+
+  @return (
+    50: $s50,
+    100: $s100,
+    200: $s200,
+    300: $s300,
+    400: $s400,
+    500: $s500,
+    600: $s600,
+    700: $s700,
+    800: $s800,
+    900: $s900,
+    A100: $a100,
+    A200: $a200,
+    A400: $a400,
+    A700: $a700,
+    contrast: (
+      50: somara-contrast-color($s50),
+      100: somara-contrast-color($s100),
+      200: somara-contrast-color($s200),
+      300: somara-contrast-color($s300),
+      400: somara-contrast-color($s400),
+      500: somara-contrast-color($s500),
+      600: somara-contrast-color($s600),
+      700: somara-contrast-color($s700),
+      800: somara-contrast-color($s800),
+      900: somara-contrast-color($s900),
+      A100: somara-contrast-color($a100),
+      A200: somara-contrast-color($a200),
+      A400: somara-contrast-color($a400),
+      A700: somara-contrast-color($a700),
+    ),
+  );
+}
+
+$somara-primary-light-palette: mat.m2-define-palette(somara-m2-palette($somara-primary-light), 500, 100, 700);
+$somara-accent-light-palette: mat.m2-define-palette(somara-m2-palette($somara-secondary-light), 500, 100, 700);
+$somara-primary-dark-palette: mat.m2-define-palette(somara-m2-palette($somara-primary-dark), 500, 100, 700);
+$somara-accent-dark-palette: mat.m2-define-palette(somara-m2-palette($somara-secondary-dark), 500, 100, 700);
+$somara-warn-palette: mat.m2-define-palette(somara-m2-palette($somara-warn), 500, 100, 700);
+
+$somara-material-light-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $somara-primary-light-palette,
+    accent: $somara-accent-light-palette,
+    warn: $somara-warn-palette,
+  ),
+  density: 0,
+));
+
+$somara-material-dark-theme: mat.m2-define-dark-theme((
+  color: (
+    primary: $somara-primary-dark-palette,
+    accent: $somara-accent-dark-palette,
+    warn: $somara-warn-palette,
+  ),
+  density: 0,
+));
+
+@include mat.core();
+
+:root {
+  --somara-primary-light: #{$somara-primary-light};
+  --somara-secondary-light: #{$somara-secondary-light};
+  --somara-background-light: #{$somara-background-light};
+  --somara-text-light: #{$somara-text-light};
+
+  --somara-primary-dark: #{$somara-primary-dark};
+  --somara-secondary-dark: #{$somara-secondary-dark};
+  --somara-background-dark: #{$somara-background-dark};
+  --somara-text-dark: #{$somara-text-dark};
+
+  --somara-primary: var(--somara-primary-light);
+  --somara-primary-2: color-mix(in srgb, var(--somara-primary) 80%, var(--somara-background));
+  --somara-secondary: var(--somara-secondary-light);
+  --somara-background: var(--somara-background-light);
+  --somara-text: var(--somara-text-light);
+  --somara-time-morning-bg: #f2eadfcc;
+  --somara-time-midday-bg: #dfe9efcc;
+  --somara-time-afternoon-bg: #efe2dccc;
+  --somara-time-evening-bg: #e6e2edcc;
+  color-scheme: light;
+
+  @include mat.all-component-themes($somara-material-light-theme);
+}
+
+:root[data-theme="light"] {
+  --somara-primary: var(--somara-primary-light);
+  --somara-secondary: var(--somara-secondary-light);
+  --somara-background: var(--somara-background-light);
+  --somara-text: var(--somara-text-light);
+  --somara-time-morning-bg: #f2eadfcc;
+  --somara-time-midday-bg: #dfe9efcc;
+  --somara-time-afternoon-bg: #efe2dccc;
+  --somara-time-evening-bg: #e6e2edcc;
+  color-scheme: light;
+
+  @include mat.all-component-colors($somara-material-light-theme);
+}
+
+:root[data-theme="dark"] {
+  --somara-primary: var(--somara-primary-dark);
+  --somara-secondary: var(--somara-secondary-dark);
+  --somara-background: var(--somara-background-dark);
+  --somara-text: var(--somara-text-dark);
+  --somara-time-morning-bg: #4b4337;
+  --somara-time-midday-bg: #37464e;
+  --somara-time-afternoon-bg: #4b3d38;
+  --somara-time-evening-bg: #413b4a;
+  color-scheme: dark;
+
+  @include mat.all-component-colors($somara-material-dark-theme);
+}

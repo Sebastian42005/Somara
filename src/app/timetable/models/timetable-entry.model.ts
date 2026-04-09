@@ -1,5 +1,5 @@
 export interface Teacher {
-  id: string;
+  id: number;
   name: string;
 }
 
@@ -8,6 +8,7 @@ export interface TimetableEntry {
   start: Date;
   end: Date;
   color: string;
+  level: string;
   teacher: Teacher;
 }
 
