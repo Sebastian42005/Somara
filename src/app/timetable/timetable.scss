@@ -13,7 +13,7 @@
   transition: background-color 140ms ease, transform 120ms ease, opacity 120ms ease;
 
   &:hover:enabled {
-    background-color: color-mix(in srgb, var(--somara-secondary) 14%, transparent);
+    background-color: var(--somara-secondary-14);
   }
 
   &:active:enabled {

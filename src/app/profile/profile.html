@@ -1,0 +1,41 @@
+<section class="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-10">
+  <header class="mb-6">
+    <h1 class="m-0 text-[var(--somara-fs-4)] leading-tight">Profil bearbeiten</h1>
+  </header>
+
+  <form
+    class="profile-form flex flex-col gap-4 rounded-3xl border p-5 sm:p-6"
+    [formGroup]="profileForm"
+    (ngSubmit)="saveProfile()">
+    <label class="flex flex-col gap-1.5" for="profile-username">
+      <span class="text-sm font-medium">Username</span>
+      <input
+        id="profile-username"
+        class="input-base"
+        type="text"
+        formControlName="username"
+        autocomplete="username" />
+    </label>
+
+    @if (isUsernameInvalid()) {
+      <p class="m-0 text-sm status-error">Bitte gib einen gueltigen Username ein.</p>
+    }
+
+    <label class="flex flex-col gap-1.5" for="profile-role">
+      <span class="text-sm font-medium">Rolle</span>
+      <input id="profile-role" class="input-base" type="text" [value]="role()" disabled />
+    </label>
+
+    @if (successMessage()) {
+      <p class="m-0 text-sm status-success">{{ successMessage() }}</p>
+    }
+
+    <div class="mt-2">
+      <button
+        type="submit"
+        class="button-base button-raised">
+        Speichern
+      </button>
+    </div>
+  </form>
+</section>

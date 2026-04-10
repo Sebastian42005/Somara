@@ -4,6 +4,7 @@ export interface Teacher {
   id: number;
   name: string;
   description?: string | null;
+  profileImage?: string | null;
 }
 
 export interface TimetableYogaClass {
@@ -13,6 +14,9 @@ export interface TimetableYogaClass {
 }
 
 export interface TimetableEntry {
+  id: number;
+  name: string;
+  color: string;
   start: Date;
   end: Date;
   yogaClass: TimetableYogaClass;

@@ -1,10 +1,16 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { TeacherResponseDto } from '../../core/models/teacher.dto';
 import { SomaraSignalStore } from '../../core/store/somara-signal.store';
 
 const MAX_PROFILE_IMAGE_BYTES = 4 * 1024 * 1024;
+const NON_WHITESPACE_PATTERN = /\S/;
+
+interface CreateTeacherDialogData {
+  teacher?: TeacherResponseDto | null;
+}
 
 @Component({
   selector: 'app-create-teacher-dialog',
@@ -21,24 +27,34 @@ export class CreateTeacherDialog {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialogRef = inject(MatDialogRef<CreateTeacherDialog>);
+  private readonly data = inject<CreateTeacherDialogData | null>(MAT_DIALOG_DATA, { optional: true });
 
   private readonly localErrorSignal = signal<string | null>(null);
   private readonly selectedProfileImageFileSignal = signal<File | null>(null);
   private readonly profileImagePreviewUrlSignal = signal<string | null>(null);
+  private readonly editTeacher = this.data?.teacher ?? null;
 
   readonly isTeachersLoading = this.store.isTeachersLoading;
   readonly isSubmitting = signal(false);
   readonly isBusy = computed(() => this.isSubmitting() || this.isTeachersLoading());
+  readonly isEditMode = computed(() => this.editTeacher !== null);
+  readonly dialogTitle = computed(() => this.isEditMode() ? 'Lehrer bearbeiten' : 'Neuen Lehrer erstellen');
+  readonly submitButtonLabel = computed(() => this.isEditMode() ? 'Lehrer speichern' : 'Lehrer erstellen');
   readonly errorMessage = computed(() => this.localErrorSignal() ?? this.store.teachersError());
 
   readonly teacherForm = this.fb.nonNullable.group({
-    name: ['', [Validators.required, Validators.maxLength(120)]],
-    description: ['', [Validators.required, Validators.maxLength(1000)]],
+    name: [
+      this.editTeacher?.name ?? '',
+      [Validators.required, Validators.pattern(NON_WHITESPACE_PATTERN), Validators.maxLength(120)],
+    ],
+    description: [
+      this.editTeacher?.description ?? '',
+      [Validators.required, Validators.pattern(NON_WHITESPACE_PATTERN), Validators.maxLength(1000)],
+    ],
   });
 
   readonly profileImagePreview = computed(() => this.profileImagePreviewUrlSignal());
   readonly selectedProfileImageName = computed(() => this.selectedProfileImageFileSignal()?.name ?? null);
-
   constructor() {
     this.destroyRef.onDestroy(() => {
       this.revokeProfileImagePreviewUrl();
@@ -69,7 +85,7 @@ export class CreateTeacherDialog {
       return;
     }
 
-    if (selectedProfileImage === null) {
+    if (!this.isEditMode() && selectedProfileImage === null) {
       this.localErrorSignal.set('Bitte wähle ein Profilbild aus.');
       return;
     }
@@ -77,11 +93,20 @@ export class CreateTeacherDialog {
     this.isSubmitting.set(true);
 
     try {
-      await this.store.createTeacher({
-        name: normalizedName,
-        description: normalizedDescription,
-        profileImage: selectedProfileImage,
-      });
+      if (this.editTeacher) {
+        await this.store.updateTeacher(this.editTeacher.id, {
+          name: normalizedName,
+          description: normalizedDescription,
+          profileImage: this.editTeacher.profileImage ?? undefined,
+        });
+      } else if (selectedProfileImage) {
+        await this.store.createTeacher({
+          name: normalizedName,
+          description: normalizedDescription,
+          profileImage: selectedProfileImage,
+        });
+      }
+
       this.dialogRef.close(true);
     } catch {
       // Error state is managed in store and exposed in the template.
@@ -92,6 +117,14 @@ export class CreateTeacherDialog {
 
   close(): void {
     this.dialogRef.close(false);
+  }
+
+  canSubmit(): boolean {
+    if (this.isBusy() || this.teacherForm.invalid) {
+      return false;
+    }
+
+    return this.isEditMode() || this.selectedProfileImageFileSignal() !== null;
   }
 
   onProfileImageSelected(event: Event): void {

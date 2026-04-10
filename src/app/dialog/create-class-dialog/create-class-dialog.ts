@@ -1,10 +1,17 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { ClassResponseDto } from '../../core/models/class.dto';
 import { SomaraSignalStore } from '../../core/store/somara-signal.store';
+import { getDefaultClassColorHex } from '../../core/theme/theme-color';
 
 const MAX_CLASS_IMAGE_BYTES = 4 * 1024 * 1024;
+const NON_WHITESPACE_PATTERN = /\S/;
+
+interface CreateClassDialogData {
+  classItem?: (ClassResponseDto & { imageUrl?: string | null }) | null;
+}
 
 @Component({
   selector: 'app-create-class-dialog',
@@ -21,25 +28,39 @@ export class CreateClassDialog {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialogRef = inject(MatDialogRef<CreateClassDialog>);
+  private readonly data = inject<CreateClassDialogData | null>(MAT_DIALOG_DATA, { optional: true });
 
   private readonly localErrorSignal = signal<string | null>(null);
   private readonly selectedClassImageFileSignal = signal<File | null>(null);
   private readonly classImagePreviewUrlSignal = signal<string | null>(null);
+  private readonly editClass = this.data?.classItem ?? null;
+  private readonly defaultClassColor = getDefaultClassColorHex();
 
   readonly isClassesLoading = this.store.isClassesLoading;
   readonly isSubmitting = signal(false);
   readonly isBusy = computed(() => this.isSubmitting() || this.isClassesLoading());
+  readonly isEditMode = computed(() => this.editClass !== null);
+  readonly dialogTitle = computed(() => this.isEditMode() ? 'Klasse bearbeiten' : 'Neue Klasse erstellen');
+  readonly submitButtonLabel = computed(() => this.isEditMode() ? 'Klasse speichern' : 'Klasse erstellen');
   readonly errorMessage = computed(() => this.localErrorSignal() ?? this.store.classesError());
 
   readonly classForm = this.fb.nonNullable.group({
-    name: ['', [Validators.required, Validators.maxLength(120)]],
-    description: ['', [Validators.required, Validators.maxLength(1000)]],
-    color: ['#0F766E', [Validators.required, Validators.pattern(/^#([0-9a-fA-F]{6})$/)]],
+    name: [
+      this.editClass?.name ?? '',
+      [Validators.required, Validators.maxLength(120)],
+    ],
+    description: [
+      this.editClass?.description ?? '',
+      [Validators.maxLength(1000)],
+    ],
+    color: [
+      this.editClass?.color ?? this.defaultClassColor,
+      [Validators.required, Validators.pattern(/^#([0-9a-fA-F]{6})$/)],
+    ],
   });
 
-  readonly classImagePreview = computed(() => this.classImagePreviewUrlSignal());
-  readonly selectedClassImageName = computed(() => this.selectedClassImageFileSignal()?.name ?? null);
-
+  readonly classImagePreview = computed(() => this.classImagePreviewUrlSignal() ?? this.editClass?.imageUrl ?? null);
+  readonly hasSelectedClassImage = computed(() => this.selectedClassImageFileSignal() !== null);
   constructor() {
     this.destroyRef.onDestroy(() => {
       this.revokeClassImagePreviewUrl();
@@ -78,12 +99,21 @@ export class CreateClassDialog {
     this.isSubmitting.set(true);
 
     try {
-      await this.store.createClass({
-        name: normalizedName,
-        description: normalizedDescription,
-        color: normalizedColor,
-        image: this.selectedClassImageFileSignal() ?? undefined,
-      });
+      if (this.editClass) {
+        await this.store.updateClass(this.editClass.id, {
+          name: normalizedName,
+          description: normalizedDescription,
+          color: normalizedColor,
+          image: this.selectedClassImageFileSignal() ?? undefined,
+        });
+      } else {
+        await this.store.createClass({
+          name: normalizedName,
+          description: normalizedDescription,
+          color: normalizedColor,
+          image: this.selectedClassImageFileSignal() ?? undefined,
+        });
+      }
       this.dialogRef.close(true);
     } catch {
       // Error state is managed in store and exposed in the template.
@@ -94,6 +124,10 @@ export class CreateClassDialog {
 
   close(): void {
     this.dialogRef.close(false);
+  }
+
+  canSubmit(): boolean {
+    return !this.isBusy() && this.classForm.valid;
   }
 
   onClassImageSelected(event: Event): void {

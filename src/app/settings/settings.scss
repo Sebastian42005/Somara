@@ -1,0 +1,28 @@
+.settings-subtitle {
+  color: var(--somara-text-76);
+}
+
+.settings-theme-card {
+  border-color: var(--somara-on-primary-18);
+  color: var(--somara-on-primary);
+  background: linear-gradient(150deg, var(--somara-primary-white-92), var(--somara-primary-black-76));
+  box-shadow: 0 16px 34px var(--somara-shadow-ink-22);
+}
+
+.settings-card-subtitle {
+  color: var(--somara-on-primary-84);
+}
+
+.theme-option {
+  border-color: var(--somara-on-primary-26);
+  background: var(--somara-on-primary-8);
+  color: var(--somara-on-primary-90);
+  outline-color: var(--somara-on-primary-outline);
+}
+
+.theme-option--active {
+  border-color: var(--somara-on-primary-78);
+  background: var(--somara-on-primary-96);
+  color: var(--somara-primary);
+  box-shadow: 0 4px 14px var(--somara-on-primary-22);
+}

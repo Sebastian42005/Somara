@@ -11,12 +11,13 @@ import { map, merge, startWith } from 'rxjs';
 import { ScheduleEntryLevel } from '../../core/models/timetable-entry.dto';
 import { SomaraSignalStore } from '../../core/store/somara-signal.store';
 import { TimetableEntryComponent } from '../../timetable/timetable-entry/timetable-entry';
-import { TimetableEntry } from '../../timetable/models/timetable-entry.model';
+import { getMinutesDifference, TimetableEntry } from '../../timetable/models/timetable-entry.model';
 
 const TIME_PATTERN = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
 
 interface CreateTimetableEntryDialogData {
   initialDate?: Date | null;
+  entry?: TimetableEntry | null;
 }
 
 @Component({
@@ -44,6 +45,7 @@ export class CreateTimetableEntryDialog {
   private readonly localErrorSignal = signal<string | null>(null);
   private isApplyingDerivedUpdate = false;
   private readonly maxMinutesOfDay = 23 * 60 + 59;
+  private readonly editEntry = this.data?.entry ?? null;
 
   readonly teachers = this.store.teachers;
   readonly classes = this.store.classes;
@@ -70,16 +72,22 @@ export class CreateTimetableEntryDialog {
     ?? this.store.teachersError()
     ?? this.store.classesError(),
   );
+  readonly isEditMode = computed(() => this.editEntry !== null);
+  readonly dialogTitle = computed(() => this.isEditMode() ? 'Stundenplan-Eintrag bearbeiten' : 'Neuen Timetable-Eintrag erstellen');
+  readonly submitButtonLabel = computed(() => this.isEditMode() ? 'Eintrag speichern' : 'Eintrag erstellen');
 
   readonly entryForm = this.fb.nonNullable.group(
     {
-      level: ['beginner' as ScheduleEntryLevel, [Validators.required]],
-      teacherId: [0, [Validators.required, Validators.min(1)]],
-      yogaClassId: [0, [Validators.required, Validators.min(1)]],
-      date: [this.normalizeDate(this.data?.initialDate ?? new Date()), [Validators.required]],
-      startTime: ['08:00', [Validators.required, Validators.pattern(TIME_PATTERN)]],
-      endTime: ['09:00', [Validators.required, Validators.pattern(TIME_PATTERN)]],
-      durationMinutes: [60, [Validators.required, Validators.min(1), Validators.max(this.maxMinutesOfDay)]],
+      level: [this.editEntry?.level ?? 'beginner' as ScheduleEntryLevel, [Validators.required]],
+      teacherId: [this.editEntry?.teacher.id ?? 0, [Validators.required, Validators.min(1)]],
+      yogaClassId: [this.editEntry?.yogaClass.id ?? 0, [Validators.required, Validators.min(1)]],
+      date: [this.normalizeDate(this.editEntry?.start ?? this.data?.initialDate ?? new Date()), [Validators.required]],
+      startTime: [this.editEntry ? this.toTimeString(this.editEntry.start) : '08:00', [Validators.required, Validators.pattern(TIME_PATTERN)]],
+      endTime: [this.editEntry ? this.toTimeString(this.editEntry.end) : '09:00', [Validators.required, Validators.pattern(TIME_PATTERN)]],
+      durationMinutes: [
+        this.editEntry ? Math.max(1, getMinutesDifference(this.editEntry.start, this.editEntry.end)) : 60,
+        [Validators.required, Validators.min(1), Validators.max(this.maxMinutesOfDay)],
+      ],
     },
     { validators: [(control) => this.validateTimeRange(control)] },
   );
@@ -112,6 +120,7 @@ export class CreateTimetableEntryDialog {
     }
 
     return {
+      id: this.editEntry?.id ?? 0,
       name: className,
       start,
       end,
@@ -125,6 +134,11 @@ export class CreateTimetableEntryDialog {
       teacher: selectedTeacher,
     };
   });
+  readonly canSubmit = computed(() =>
+    !this.isBusy()
+    && this.entryForm.valid
+    && this.previewEntry() !== null,
+  );
 
   constructor() {
     this.connectTimeDerivation();
@@ -173,14 +187,21 @@ export class CreateTimetableEntryDialog {
     this.isSubmitting.set(true);
 
     try {
-      await this.store.createTimetableEntry({
+      const payload = {
         name: derivedName,
         level,
         teacherId,
         yogaClassId,
         start,
         end,
-      });
+      };
+
+      if (this.editEntry) {
+        await this.store.updateTimetableEntry(this.editEntry.id, payload);
+      } else {
+        await this.store.createTimetableEntry(payload);
+      }
+
       this.dialogRef.close(true);
     } catch {
       // Error state is managed in store and exposed in the template.
@@ -350,6 +371,12 @@ export class CreateTimetableEntryDialog {
   private normalizeDate(value: Date | null): Date {
     const date = value ?? new Date();
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
+
+  private toTimeString(value: Date): string {
+    const hours = value.getHours().toString().padStart(2, '0');
+    const minutes = value.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   }
 
 }

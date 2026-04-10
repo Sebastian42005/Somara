@@ -64,12 +64,12 @@
   width: 8.5rem;
   height: 8.5rem;
   border-radius: 1rem;
-  border: 2px solid color-mix(in srgb, var(--somara-secondary) 58%, transparent);
+  border: 2px solid var(--somara-secondary-58);
 }
 
 .class-image-preview {
   object-fit: cover;
-  background-color: color-mix(in srgb, var(--somara-primary) 30%, var(--somara-background));
+  background-color: var(--somara-primary-background-30);
 }
 
 .class-image-placeholder {
@@ -78,9 +78,9 @@
   justify-content: center;
   text-align: center;
   padding: 0.65rem;
-  color: color-mix(in srgb, var(--somara-text) 70%, transparent);
+  color: var(--somara-text-70);
   font-size: 0.78rem;
-  background-color: color-mix(in srgb, var(--somara-secondary) 10%, transparent);
+  background-color: var(--somara-secondary-10);
 }
 
 .class-image-delete {
@@ -90,13 +90,13 @@
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  border: 2px solid color-mix(in srgb, #b91c1c 60%, transparent);
-  background: color-mix(in srgb, #b91c1c 10%, transparent);
-  color: #b91c1c;
+  border: 2px solid var(--somara-error-60);
+  background: var(--somara-error-10);
+  color: var(--somara-error);
   transition: transform 120ms ease, background-color 150ms ease;
 
   &:hover:enabled {
-    background: color-mix(in srgb, #b91c1c 20%, transparent);
+    background: var(--somara-error-20);
   }
 
   &:active:enabled {

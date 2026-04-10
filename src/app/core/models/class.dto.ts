@@ -5,6 +5,12 @@ export interface CreateClassRequestDto {
   image?: File;
 }
 
+export interface ClassRequestDto {
+  name: string;
+  description: string;
+  color: string;
+}
+
 export interface ClassResponseDto {
   id: number;
   name: string;

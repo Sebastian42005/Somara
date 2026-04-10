@@ -9,7 +9,7 @@
   width: 0.9rem;
   height: 0.9rem;
   border-radius: 9999px;
-  border: 1px solid rgba(15, 23, 42, 0.25);
+  border: 1px solid var(--somara-text-24);
 }
 
 .preview-section {
@@ -18,7 +18,7 @@
   gap: 0.55rem;
   margin-top: 0.2rem;
   padding-top: 0.8rem;
-  border-top: 1px solid color-mix(in srgb, var(--somara-text) 20%, transparent);
+  border-top: 1px solid var(--somara-text-20);
 }
 
 .preview-title {
@@ -30,5 +30,5 @@
 .preview-empty {
   margin: 0;
   font-size: 0.875rem;
-  color: color-mix(in srgb, var(--somara-text) 68%, transparent);
+  color: var(--somara-text-68);
 }

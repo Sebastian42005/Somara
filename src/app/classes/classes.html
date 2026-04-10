@@ -1,0 +1,86 @@
+<section
+  class="classes-overview primary-bg relative m-4 overflow-hidden rounded-[1.55rem] border p-4 shadow-2xl sm:m-8 sm:p-6 lg:m-10 lg:p-8">
+  <div class="classes-overview__glow classes-overview__glow--top" aria-hidden="true"></div>
+  <div class="classes-overview__glow classes-overview__glow--bottom" aria-hidden="true"></div>
+
+  <header class="relative z-10 max-w-3xl">
+    <h1 class="mb-2 mt-2">Unsere Klassen</h1>
+    <p class="classes-overview__subtitle max-w-[44ch]">
+      Jede Klasse hat ihren eigenen Stil. Entdecke Bild, Namen und Farbe auf einen Blick.
+    </p>
+    <div class="classes-overview__meta mt-3 inline-flex items-center gap-2">
+      <span class="text-[var(--somara-fs-3)] font-bold leading-none">{{ classCount() }}</span>
+      <span>verfügbare Klassen</span>
+    </div>
+  </header>
+
+  @if (isClassesLoading()) {
+    <div class="relative z-10 mt-6 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))]"
+         aria-live="polite" aria-label="Klassen werden geladen">
+      @for (slot of loadingSlots; track slot) {
+        <article class="classes-loading-card overflow-hidden rounded-2xl border-2">
+          <div class="classes-loading-card__image mx-4 mt-4 aspect-[16/11] animate-pulse rounded-xl"></div>
+          <div class="grid gap-2 p-4">
+            <span class="classes-loading-card__line block h-3 w-2/3 animate-pulse rounded-full"></span>
+            <span class="classes-loading-card__line block h-3 w-1/2 animate-pulse rounded-full"></span>
+          </div>
+        </article>
+      }
+    </div>
+  } @else if (classesError()) {
+    <section
+      class="classes-empty-state relative z-10 mt-6 grid min-h-52 place-items-center gap-2 rounded-2xl border-2 border-dashed p-6 text-center"
+      aria-live="polite">
+      <mat-icon aria-hidden="true">error_outline</mat-icon>
+      <h2 class="m-0 text-[var(--somara-fs-2)]">Klassen konnten nicht geladen werden</h2>
+      <p class="classes-empty-state__text m-0">{{ classesError() }}</p>
+      <button type="button" class="button-base button-raised mt-2" (click)="reloadClasses()">
+        Erneut versuchen
+      </button>
+    </section>
+  } @else if (classes().length === 0) {
+    <section
+      class="classes-empty-state relative z-10 mt-6 grid min-h-52 place-items-center gap-2 rounded-2xl border-2 border-dashed p-6 text-center"
+      aria-live="polite">
+      <mat-icon aria-hidden="true">school</mat-icon>
+      <h2 class="m-0 text-[var(--somara-fs-2)]">Noch keine Klassen vorhanden</h2>
+      <p class="classes-empty-state__text m-0">Lege im Adminbereich neue Klassen an, damit sie hier angezeigt
+        werden.</p>
+    </section>
+  } @else {
+    <div class="relative z-10 mt-6 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))]">
+      @for (classItem of classes(); track classItem.id) {
+        <article
+          class="class-card card-clickable overflow-hidden rounded-2xl border-2 p-0 transition-transform duration-200"
+          [style.--class-accent]="classItem.color">
+          <div class="class-card__image-wrapper mx-4 mt-4 overflow-hidden rounded-xl border-2">
+            @if (classItem.hasImage) {
+              <div class="w-full aspect-video overflow-hidden">
+                <img
+                  class="class-card__image aspect-video object-cover"
+                  [src]="getClassImageUrl(classItem.id)"
+                  [alt]="'Bild von ' + classItem.name"
+                  loading="lazy"/>
+              </div>
+            } @else {
+              <div class="class-card__placeholder grid aspect-[16/11] place-items-center gap-1" aria-hidden="true">
+                <span
+                  class="text-[var(--somara-fs-4)] font-bold leading-none">{{ getClassInitial(classItem.name) }}</span>
+                <mat-icon>spa</mat-icon>
+              </div>
+            }
+          </div>
+
+          <div class="flex flex-row items-center justify-center gap-2 p-4">
+            <span
+              class="class-card__color-dot h-6 w-6 rounded-full border-2"
+              [style.background-color]="classItem.color"
+              [attr.aria-label]="'Klassenfarbe: ' + formatColor(classItem.color)">
+              </span>
+            <h2 class="m-0 text-[var(--somara-fs-2)] leading-tight">{{ classItem.name }}</h2>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

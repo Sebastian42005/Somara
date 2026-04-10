@@ -5,6 +5,7 @@ import {
   AuthResponseDto,
   LoginRequestDto,
   RegisterRequestDto,
+  UpdateProfileRequestDto,
 } from '../models/auth.dto';
 import {
   TimetableEntryRequestDto,
@@ -19,9 +20,11 @@ import {
 } from '../models/teacher.dto';
 import {
   ClassResponseDto,
+  ClassRequestDto,
   CreateClassRequestDto,
 } from '../models/class.dto';
 import { TimetableEntry } from '../../timetable/models/timetable-entry.model';
+import { getDefaultClassColorHex } from '../theme/theme-color';
 
 interface RequestState {
   loading: boolean;
@@ -30,6 +33,7 @@ interface RequestState {
 
 const AUTH_STORAGE_KEY = 'somara.auth';
 export const apiBasePath = 'http://localhost:8080/api';
+const DEFAULT_CLASS_COLOR = getDefaultClassColorHex();
 
 @Injectable({ providedIn: 'root' })
 export class SomaraSignalStore {
@@ -57,9 +61,10 @@ export class SomaraSignalStore {
   readonly timetableEntryColors = computed(() => this.timetableEntryColorsSignal());
   readonly timetableEntries = computed<TimetableEntry[]>(() =>
     this.timetableEntryResponsesSignal().map((entry) => {
-      const entryColor = entry.yogaClass?.color ?? entry.color ?? '#0F766E';
+      const entryColor = entry.yogaClass?.color ?? entry.color ?? DEFAULT_CLASS_COLOR;
 
       return {
+        id: entry.id,
         name: entry.name,
         start: new Date(entry.start),
         end: new Date(entry.end),
@@ -142,6 +147,24 @@ export class SomaraSignalStore {
     this.classesSignal.set([]);
     this.timetableEntryResponsesSignal.set([]);
     this.authRequestStateSignal.set({ loading: false, error: null });
+  }
+
+  updateProfile(request: UpdateProfileRequestDto): void {
+    const currentAuth = this.authResponseSignal();
+    if (currentAuth === null) {
+      return;
+    }
+
+    const nextUsername = request.username.trim();
+    if (nextUsername.length === 0) {
+      return;
+    }
+
+    this.setAuthResponse({
+      ...currentAuth,
+      username: nextUsername,
+    });
+    this.authRequestStateSignal.update((state) => ({ ...state, error: null }));
   }
 
   async loadTeachers(): Promise<TeacherResponseDto[]> {
@@ -246,6 +269,56 @@ export class SomaraSignalStore {
       this.classesSignal.update((classes) => [...classes, classToInsert]);
       this.classesRequestStateSignal.set({ loading: false, error: null });
       return classToInsert;
+    } catch (error) {
+      this.classesRequestStateSignal.set({
+        loading: false,
+        error: this.toErrorMessage(error),
+      });
+      throw error;
+    }
+  }
+
+  async updateClass(
+    id: number,
+    request: CreateClassRequestDto,
+  ): Promise<ClassResponseDto> {
+    this.classesRequestStateSignal.set({ loading: true, error: null });
+
+    try {
+      const classUpdatePayload: ClassRequestDto = {
+        name: request.name,
+        description: request.description,
+        color: request.color,
+      };
+
+      const updatedClass = await firstValueFrom(
+        this.http.put<ClassResponseDto>(
+          `${apiBasePath}/yoga-classes/${id}`,
+          classUpdatePayload,
+          this.authOptions(),
+        ),
+      );
+
+      if (request.image) {
+        const imagePayload = new FormData();
+        imagePayload.append('file', request.image);
+
+        await firstValueFrom(
+          this.http.put<void>(
+            `${apiBasePath}/yoga-classes/${id}/image`,
+            imagePayload,
+            this.authOptions(),
+          ),
+        );
+      }
+
+      const classToStore: ClassResponseDto = request.image
+        ? { ...updatedClass, hasImage: true }
+        : updatedClass;
+
+      this.upsertClass(classToStore);
+      this.classesRequestStateSignal.set({ loading: false, error: null });
+      return classToStore;
     } catch (error) {
       this.classesRequestStateSignal.set({
         loading: false,
@@ -565,6 +638,20 @@ export class SomaraSignalStore {
 
       return entries.map((existingEntry) =>
         existingEntry.id === entry.id ? entry : existingEntry,
+      );
+    });
+  }
+
+  private upsertClass(classItem: ClassResponseDto): void {
+    this.classesSignal.update((classes) => {
+      const existingIndex = classes.findIndex((existingClass) => existingClass.id === classItem.id);
+
+      if (existingIndex === -1) {
+        return [...classes, classItem];
+      }
+
+      return classes.map((existingClass) =>
+        existingClass.id === classItem.id ? classItem : existingClass,
       );
     });
   }

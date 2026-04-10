@@ -1,5 +1,5 @@
 <mat-dialog-content>
-  <h5 class="mb-1">Neuen Timetable-Eintrag erstellen</h5>
+  <h5 class="mb-4">{{ dialogTitle() }}</h5>
 
   <form
     id="create-timetable-entry-form"
@@ -73,7 +73,7 @@
     </div>
 
     @if (entryForm.hasError('invalidTimeRange')) {
-      <p class="text-sm text-red-700">Die Endzeit muss spaeter als die Startzeit sein.</p>
+      <p class="text-sm status-error">Die Endzeit muss spaeter als die Startzeit sein.</p>
     }
 
     <mat-form-field appearance="outline" class="secondary-mat-form-field">
@@ -110,7 +110,7 @@
   </form>
 
   @if (errorMessage()) {
-    <p class="mt-3 text-sm text-red-700">{{ errorMessage() }}</p>
+    <p class="mt-3 text-sm status-error">{{ errorMessage() }}</p>
   }
 </mat-dialog-content>
 
@@ -126,8 +126,8 @@
   <button
     type="submit"
     class="button-base button-raised min-w-52"
-    [disabled]="isBusy()"
+    [disabled]="!canSubmit()"
     form="create-timetable-entry-form">
-    Eintrag erstellen
+    {{ submitButtonLabel() }}
   </button>
 </mat-dialog-actions>

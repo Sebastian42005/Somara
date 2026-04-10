@@ -12,6 +12,7 @@ interface TeacherSummary {
     id: number;
     name: string;
     description?: string | null;
+    profileImage?: string | null;
   };
   entryCount: number;
   nextEntry: TimetableEntry | null;
@@ -134,6 +135,33 @@ export class Admin {
     });
   }
 
+  async onEditTeacherClick(teacherId: number): Promise<void> {
+    const teacher = this.teachers().find((item) => item.id === teacherId) ?? null;
+
+    if (teacher === null) {
+      this.store.clearErrors();
+      return;
+    }
+
+    const { CreateTeacherDialog } = await import(
+      '../dialog/create-teacher-dialog/create-teacher-dialog'
+    );
+
+    const dialogRef = this.dialog.open(CreateTeacherDialog, {
+      minWidth: DialogSize.SMALL.minWidth,
+      maxWidth: DialogSize.SMALL.maxWidth,
+      data: {
+        teacher,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((updated) => {
+      if (updated) {
+        void this.reloadData();
+      }
+    });
+  }
+
   async onCreateEntryClick(): Promise<void> {
     const { CreateTimetableEntryDialog } = await import(
       '../dialog/create-timetable-entry-dialog/create-timetable-entry-dialog'
@@ -154,6 +182,26 @@ export class Admin {
     });
   }
 
+  async onEditEntryClick(entry: TimetableEntry): Promise<void> {
+    const { CreateTimetableEntryDialog } = await import(
+      '../dialog/create-timetable-entry-dialog/create-timetable-entry-dialog'
+    );
+
+    const dialogRef = this.dialog.open(CreateTimetableEntryDialog, {
+      minWidth: DialogSize.MEDIUM.minWidth,
+      maxWidth: DialogSize.MEDIUM.maxWidth,
+      data: {
+        entry,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((updated) => {
+      if (updated) {
+        void this.reloadData();
+      }
+    });
+  }
+
   async onCreateClassClick(): Promise<void> {
     const { CreateClassDialog } = await import(
       '../dialog/create-class-dialog/create-class-dialog'
@@ -166,6 +214,36 @@ export class Admin {
 
     dialogRef.afterClosed().subscribe((created) => {
       if (created) {
+        void this.reloadData();
+      }
+    });
+  }
+
+  async onEditClassClick(classId: number): Promise<void> {
+    const classItem = this.classes().find((item) => item.id === classId) ?? null;
+
+    if (classItem === null) {
+      this.store.clearErrors();
+      return;
+    }
+
+    const { CreateClassDialog } = await import(
+      '../dialog/create-class-dialog/create-class-dialog'
+    );
+
+    const dialogRef = this.dialog.open(CreateClassDialog, {
+      minWidth: DialogSize.SMALL.minWidth,
+      maxWidth: DialogSize.SMALL.maxWidth,
+      data: {
+        classItem: {
+          ...classItem,
+          imageUrl: classItem.hasImage ? this.getClassImageUrl(classItem.id) : null,
+        },
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((updated) => {
+      if (updated) {
         void this.reloadData();
       }
     });

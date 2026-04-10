@@ -1,4 +1,5 @@
 @use 'sass:color';
+@use 'sass:math';
 @use '@angular/material' as mat;
 
 $somara-primary-light: #c1b8af;
@@ -14,11 +15,15 @@ $somara-text-dark: #eeeeee;
 $somara-warn: #b3261e;
 
 @function somara-contrast-color($value) {
-  @if color.channel($value, "lightness", $space: hsl) > 60% {
+  @if color.channel($value, 'lightness', $space: hsl) > 60% {
     @return rgba(0, 0, 0, 0.87);
   }
 
   @return #fff;
+}
+
+@function somara-alpha($value, $percent) {
+  @return color.change($value, $alpha: math.div($percent, 100));
 }
 
 @function somara-m2-palette($base) {
@@ -113,10 +118,75 @@ $somara-material-dark-theme: mat.m2-define-dark-theme((
 
   --somara-primary: var(--somara-primary-light);
   --somara-on-primary: var(--somara-on-primary-light);
-  --somara-primary-2: color-mix(in srgb, var(--somara-primary) 80%, var(--somara-background));
+  --somara-primary-2: #{color.mix($somara-primary-light, $somara-background-light, $weight: 80%)};
   --somara-secondary: var(--somara-secondary-light);
   --somara-background: var(--somara-background-light);
   --somara-text: var(--somara-text-light);
+  --somara-default-class-color: var(--somara-secondary);
+
+  --somara-text-12: #{somara-alpha($somara-text-light, 12)};
+  --somara-text-14: #{somara-alpha($somara-text-light, 14)};
+  --somara-text-18: #{somara-alpha($somara-text-light, 18)};
+  --somara-text-20: #{somara-alpha($somara-text-light, 20)};
+  --somara-text-24: #{somara-alpha($somara-text-light, 24)};
+  --somara-text-26: #{somara-alpha($somara-text-light, 26)};
+  --somara-text-48: #{somara-alpha($somara-text-light, 48)};
+  --somara-text-58: #{somara-alpha($somara-text-light, 58)};
+  --somara-text-68: #{somara-alpha($somara-text-light, 68)};
+  --somara-text-70: #{somara-alpha($somara-text-light, 70)};
+  --somara-text-72: #{somara-alpha($somara-text-light, 72)};
+  --somara-text-76: #{somara-alpha($somara-text-light, 76)};
+  --somara-text-78: #{somara-alpha($somara-text-light, 78)};
+  --somara-text-80: #{somara-alpha($somara-text-light, 80)};
+
+  --somara-secondary-8: #{somara-alpha($somara-secondary-light, 8)};
+  --somara-secondary-10: #{somara-alpha($somara-secondary-light, 10)};
+  --somara-secondary-12: #{somara-alpha($somara-secondary-light, 12)};
+  --somara-secondary-14: #{somara-alpha($somara-secondary-light, 14)};
+  --somara-secondary-16: #{somara-alpha($somara-secondary-light, 16)};
+  --somara-secondary-20: #{somara-alpha($somara-secondary-light, 20)};
+  --somara-secondary-45: #{somara-alpha($somara-secondary-light, 45)};
+  --somara-secondary-58: #{somara-alpha($somara-secondary-light, 58)};
+  --somara-secondary-65: #{somara-alpha($somara-secondary-light, 65)};
+  --somara-secondary-78: #{color.mix(black, $somara-secondary-light, $weight: 22%)};
+
+  --somara-background-76: #{somara-alpha($somara-background-light, 76)};
+  --somara-background-80: #{somara-alpha($somara-background-light, 80)};
+  --somara-background-86: #{somara-alpha($somara-background-light, 86)};
+
+  --somara-primary-background-30: #{color.mix($somara-primary-light, $somara-background-light, $weight: 30%)};
+  --somara-background-primary-34: #{color.mix($somara-background-light, $somara-primary-light, $weight: 34%)};
+  --somara-background-primary-36: #{color.mix($somara-background-light, $somara-primary-light, $weight: 36%)};
+
+  --somara-primary-white-92: #{color.mix($somara-primary-light, white, $weight: 92%)};
+  --somara-primary-black-76: #{color.mix($somara-primary-light, black, $weight: 76%)};
+
+  --somara-on-primary-8: #{somara-alpha(somara-contrast-color($somara-primary-light), 8)};
+  --somara-on-primary-18: #{somara-alpha(somara-contrast-color($somara-primary-light), 18)};
+  --somara-on-primary-22: #{somara-alpha(somara-contrast-color($somara-primary-light), 22)};
+  --somara-on-primary-26: #{somara-alpha(somara-contrast-color($somara-primary-light), 26)};
+  --somara-on-primary-78: #{somara-alpha(somara-contrast-color($somara-primary-light), 78)};
+  --somara-on-primary-84: #{somara-alpha(somara-contrast-color($somara-primary-light), 84)};
+  --somara-on-primary-88: #{somara-alpha(somara-contrast-color($somara-primary-light), 88)};
+  --somara-on-primary-90: #{somara-alpha(somara-contrast-color($somara-primary-light), 90)};
+  --somara-on-primary-96: #{somara-alpha(somara-contrast-color($somara-primary-light), 96)};
+  --somara-on-primary-outline: #{color.mix(white, somara-contrast-color($somara-primary-light), $weight: 12%)};
+
+  --somara-text-primary-86: #{color.mix($somara-text-light, $somara-primary-light, $weight: 86%)};
+
+  --somara-error: #{$somara-warn};
+  --somara-error-10: #{somara-alpha($somara-warn, 10)};
+  --somara-error-20: #{somara-alpha($somara-warn, 20)};
+  --somara-error-60: #{somara-alpha($somara-warn, 60)};
+  --somara-success: var(--somara-secondary);
+
+  --somara-shadow-ink-20: #{somara-alpha(#0f172a, 20)};
+  --somara-shadow-ink-22: #{somara-alpha(#0f172a, 22)};
+  --somara-shadow-ink-28: #{somara-alpha(#0f172a, 28)};
+  --somara-shadow-ink-30: #{somara-alpha(#0f172a, 30)};
+  --somara-shadow-ink-32: #{somara-alpha(#0f172a, 32)};
+  --somara-shadow-black-22: #{somara-alpha(black, 22)};
+
   --somara-time-morning-bg: #f2eadfcc;
   --somara-time-midday-bg: #dfe9efcc;
   --somara-time-afternoon-bg: #efe2dccc;
@@ -126,12 +196,64 @@ $somara-material-dark-theme: mat.m2-define-dark-theme((
   @include mat.all-component-themes($somara-material-light-theme);
 }
 
-:root[data-theme="light"] {
+:root[data-theme='light'] {
   --somara-primary: var(--somara-primary-light);
   --somara-on-primary: var(--somara-on-primary-light);
+  --somara-primary-2: #{color.mix($somara-primary-light, $somara-background-light, $weight: 80%)};
   --somara-secondary: var(--somara-secondary-light);
   --somara-background: var(--somara-background-light);
   --somara-text: var(--somara-text-light);
+
+  --somara-text-12: #{somara-alpha($somara-text-light, 12)};
+  --somara-text-14: #{somara-alpha($somara-text-light, 14)};
+  --somara-text-18: #{somara-alpha($somara-text-light, 18)};
+  --somara-text-20: #{somara-alpha($somara-text-light, 20)};
+  --somara-text-24: #{somara-alpha($somara-text-light, 24)};
+  --somara-text-26: #{somara-alpha($somara-text-light, 26)};
+  --somara-text-48: #{somara-alpha($somara-text-light, 48)};
+  --somara-text-58: #{somara-alpha($somara-text-light, 58)};
+  --somara-text-68: #{somara-alpha($somara-text-light, 68)};
+  --somara-text-70: #{somara-alpha($somara-text-light, 70)};
+  --somara-text-72: #{somara-alpha($somara-text-light, 72)};
+  --somara-text-76: #{somara-alpha($somara-text-light, 76)};
+  --somara-text-78: #{somara-alpha($somara-text-light, 78)};
+  --somara-text-80: #{somara-alpha($somara-text-light, 80)};
+
+  --somara-secondary-8: #{somara-alpha($somara-secondary-light, 8)};
+  --somara-secondary-10: #{somara-alpha($somara-secondary-light, 10)};
+  --somara-secondary-12: #{somara-alpha($somara-secondary-light, 12)};
+  --somara-secondary-14: #{somara-alpha($somara-secondary-light, 14)};
+  --somara-secondary-16: #{somara-alpha($somara-secondary-light, 16)};
+  --somara-secondary-20: #{somara-alpha($somara-secondary-light, 20)};
+  --somara-secondary-45: #{somara-alpha($somara-secondary-light, 45)};
+  --somara-secondary-58: #{somara-alpha($somara-secondary-light, 58)};
+  --somara-secondary-65: #{somara-alpha($somara-secondary-light, 65)};
+  --somara-secondary-78: #{color.mix(black, $somara-secondary-light, $weight: 22%)};
+
+  --somara-background-76: #{somara-alpha($somara-background-light, 76)};
+  --somara-background-80: #{somara-alpha($somara-background-light, 80)};
+  --somara-background-86: #{somara-alpha($somara-background-light, 86)};
+
+  --somara-primary-background-30: #{color.mix($somara-primary-light, $somara-background-light, $weight: 30%)};
+  --somara-background-primary-34: #{color.mix($somara-background-light, $somara-primary-light, $weight: 34%)};
+  --somara-background-primary-36: #{color.mix($somara-background-light, $somara-primary-light, $weight: 36%)};
+
+  --somara-primary-white-92: #{color.mix($somara-primary-light, white, $weight: 92%)};
+  --somara-primary-black-76: #{color.mix($somara-primary-light, black, $weight: 76%)};
+
+  --somara-on-primary-8: #{somara-alpha(somara-contrast-color($somara-primary-light), 8)};
+  --somara-on-primary-18: #{somara-alpha(somara-contrast-color($somara-primary-light), 18)};
+  --somara-on-primary-22: #{somara-alpha(somara-contrast-color($somara-primary-light), 22)};
+  --somara-on-primary-26: #{somara-alpha(somara-contrast-color($somara-primary-light), 26)};
+  --somara-on-primary-78: #{somara-alpha(somara-contrast-color($somara-primary-light), 78)};
+  --somara-on-primary-84: #{somara-alpha(somara-contrast-color($somara-primary-light), 84)};
+  --somara-on-primary-88: #{somara-alpha(somara-contrast-color($somara-primary-light), 88)};
+  --somara-on-primary-90: #{somara-alpha(somara-contrast-color($somara-primary-light), 90)};
+  --somara-on-primary-96: #{somara-alpha(somara-contrast-color($somara-primary-light), 96)};
+  --somara-on-primary-outline: #{color.mix(white, somara-contrast-color($somara-primary-light), $weight: 12%)};
+
+  --somara-text-primary-86: #{color.mix($somara-text-light, $somara-primary-light, $weight: 86%)};
+
   --somara-time-morning-bg: #f2eadfcc;
   --somara-time-midday-bg: #dfe9efcc;
   --somara-time-afternoon-bg: #efe2dccc;
@@ -141,12 +263,64 @@ $somara-material-dark-theme: mat.m2-define-dark-theme((
   @include mat.all-component-colors($somara-material-light-theme);
 }
 
-:root[data-theme="dark"] {
+:root[data-theme='dark'] {
   --somara-primary: var(--somara-primary-dark);
   --somara-on-primary: var(--somara-on-primary-dark);
+  --somara-primary-2: #{color.mix($somara-primary-dark, $somara-background-dark, $weight: 80%)};
   --somara-secondary: var(--somara-secondary-dark);
   --somara-background: var(--somara-background-dark);
   --somara-text: var(--somara-text-dark);
+
+  --somara-text-12: #{somara-alpha($somara-text-dark, 12)};
+  --somara-text-14: #{somara-alpha($somara-text-dark, 14)};
+  --somara-text-18: #{somara-alpha($somara-text-dark, 18)};
+  --somara-text-20: #{somara-alpha($somara-text-dark, 20)};
+  --somara-text-24: #{somara-alpha($somara-text-dark, 24)};
+  --somara-text-26: #{somara-alpha($somara-text-dark, 26)};
+  --somara-text-48: #{somara-alpha($somara-text-dark, 48)};
+  --somara-text-58: #{somara-alpha($somara-text-dark, 58)};
+  --somara-text-68: #{somara-alpha($somara-text-dark, 68)};
+  --somara-text-70: #{somara-alpha($somara-text-dark, 70)};
+  --somara-text-72: #{somara-alpha($somara-text-dark, 72)};
+  --somara-text-76: #{somara-alpha($somara-text-dark, 76)};
+  --somara-text-78: #{somara-alpha($somara-text-dark, 78)};
+  --somara-text-80: #{somara-alpha($somara-text-dark, 80)};
+
+  --somara-secondary-8: #{somara-alpha($somara-secondary-dark, 8)};
+  --somara-secondary-10: #{somara-alpha($somara-secondary-dark, 10)};
+  --somara-secondary-12: #{somara-alpha($somara-secondary-dark, 12)};
+  --somara-secondary-14: #{somara-alpha($somara-secondary-dark, 14)};
+  --somara-secondary-16: #{somara-alpha($somara-secondary-dark, 16)};
+  --somara-secondary-20: #{somara-alpha($somara-secondary-dark, 20)};
+  --somara-secondary-45: #{somara-alpha($somara-secondary-dark, 45)};
+  --somara-secondary-58: #{somara-alpha($somara-secondary-dark, 58)};
+  --somara-secondary-65: #{somara-alpha($somara-secondary-dark, 65)};
+  --somara-secondary-78: #{color.mix(black, $somara-secondary-dark, $weight: 22%)};
+
+  --somara-background-76: #{somara-alpha($somara-background-dark, 76)};
+  --somara-background-80: #{somara-alpha($somara-background-dark, 80)};
+  --somara-background-86: #{somara-alpha($somara-background-dark, 86)};
+
+  --somara-primary-background-30: #{color.mix($somara-primary-dark, $somara-background-dark, $weight: 30%)};
+  --somara-background-primary-34: #{color.mix($somara-background-dark, $somara-primary-dark, $weight: 34%)};
+  --somara-background-primary-36: #{color.mix($somara-background-dark, $somara-primary-dark, $weight: 36%)};
+
+  --somara-primary-white-92: #{color.mix($somara-primary-dark, white, $weight: 92%)};
+  --somara-primary-black-76: #{color.mix($somara-primary-dark, black, $weight: 76%)};
+
+  --somara-on-primary-8: #{somara-alpha(somara-contrast-color($somara-primary-dark), 8)};
+  --somara-on-primary-18: #{somara-alpha(somara-contrast-color($somara-primary-dark), 18)};
+  --somara-on-primary-22: #{somara-alpha(somara-contrast-color($somara-primary-dark), 22)};
+  --somara-on-primary-26: #{somara-alpha(somara-contrast-color($somara-primary-dark), 26)};
+  --somara-on-primary-78: #{somara-alpha(somara-contrast-color($somara-primary-dark), 78)};
+  --somara-on-primary-84: #{somara-alpha(somara-contrast-color($somara-primary-dark), 84)};
+  --somara-on-primary-88: #{somara-alpha(somara-contrast-color($somara-primary-dark), 88)};
+  --somara-on-primary-90: #{somara-alpha(somara-contrast-color($somara-primary-dark), 90)};
+  --somara-on-primary-96: #{somara-alpha(somara-contrast-color($somara-primary-dark), 96)};
+  --somara-on-primary-outline: #{color.mix(white, somara-contrast-color($somara-primary-dark), $weight: 12%)};
+
+  --somara-text-primary-86: #{color.mix($somara-text-dark, $somara-primary-dark, $weight: 86%)};
+
   --somara-time-morning-bg: #4b4337;
   --somara-time-midday-bg: #37464e;
   --somara-time-afternoon-bg: #4b3d38;

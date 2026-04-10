@@ -1,0 +1,114 @@
+<section
+  class="teacher-overview primary-bg m-4 overflow-hidden rounded-[1.55rem] border p-4 shadow-2xl sm:m-8 sm:p-6 lg:m-10 lg:p-8">
+  <div class="teacher-overview__glow teacher-overview__glow--top" aria-hidden="true"></div>
+  <div class="teacher-overview__glow teacher-overview__glow--bottom" aria-hidden="true"></div>
+
+  <header class="relative z-10 flex flex-wrap items-start justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <app-profile-picture [teacher]="teacherProfile()"></app-profile-picture>
+      <div>
+        <h4 class="mb-1">Lehrerbereich</h4>
+        <p class="teacher-overview__subtitle">
+          Hallo {{ teacherDisplayName() }}, hier siehst du alle deine kommenden Stunden und die wichtigsten Infos dazu.
+        </p>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="button-base button-stroked"
+      [disabled]="isBusy()"
+      (click)="reloadData()">
+      <mat-icon>refresh</mat-icon>
+      Aktualisieren
+    </button>
+  </header>
+
+  @if (errorMessage()) {
+    <p class="relative z-10 mt-3 text-sm status-error">{{ errorMessage() }}</p>
+  }
+
+  <section class="relative z-10 mt-5 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(10rem,1fr))]">
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-card__label">Kommende Stunden</span>
+      <strong class="teacher-stat-card__value">{{ upcomingCount() }}</strong>
+    </article>
+
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-card__label">Nächster Start</span>
+      <strong class="teacher-stat-card__value">{{ nextEntryRelativeText() }}</strong>
+      @if (nextEntry(); as nextEntry) {
+        <span class="teacher-stat-card__meta">{{ nextEntry.start | date:'dd.MM.yyyy HH:mm' }}</span>
+      }
+    </article>
+
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-card__label">Unterrichtstage</span>
+      <strong class="teacher-stat-card__value">{{ teachingDayCount() }}</strong>
+    </article>
+
+    <article class="teacher-stat-card">
+      <span class="teacher-stat-card__label">Minuten (7 Tage)</span>
+      <strong class="teacher-stat-card__value">{{ nextSevenDaysMinutes() }}</strong>
+      <span class="teacher-stat-card__meta">Gesamt: {{ upcomingMinutes() }} Min</span>
+    </article>
+  </section>
+
+  @if (isBusy()) {
+    <section class="teacher-empty-state relative z-10 mt-6 grid min-h-52 place-items-center gap-2 rounded-2xl border-2 border-dashed p-6 text-center">
+      <mat-icon>hourglass_top</mat-icon>
+      <p class="teacher-empty-state__text m-0">Stunden werden geladen...</p>
+    </section>
+  } @else if (!hasTeacherMapping()) {
+    <section class="teacher-empty-state relative z-10 mt-6 grid min-h-52 place-items-center gap-2 rounded-2xl border-2 border-dashed p-6 text-center">
+      <mat-icon>manage_accounts</mat-icon>
+      <h5 class="m-0">Lehrerprofil konnte nicht zugeordnet werden</h5>
+      <p class="teacher-empty-state__text m-0 max-w-[50ch]">
+        Bitte stelle sicher, dass dein Login-Username mit einem Lehrerprofil verknüpft ist.
+      </p>
+    </section>
+  } @else if (groupedSchedule().length === 0) {
+    <section class="teacher-empty-state relative z-10 mt-6 grid min-h-52 place-items-center gap-2 rounded-2xl border-2 border-dashed p-6 text-center">
+      <mat-icon>event_busy</mat-icon>
+      <h5 class="m-0">Keine zukünftigen Stunden</h5>
+      <p class="teacher-empty-state__text m-0">Sobald neue Einträge geplant sind, erscheinen sie hier.</p>
+    </section>
+  } @else {
+    <div class="relative z-10 mt-6 flex flex-col gap-4">
+      @for (day of groupedSchedule(); track day.isoDate) {
+        <article class="teacher-day-card">
+          <header class="teacher-day-card__header">
+            <h6 class="m-0">{{ day.date | date:'dd.MM.yyyy' }}</h6>
+            <span class="teacher-day-card__meta">{{ day.entries.length }} Stunde(n) · {{ day.totalMinutes }} Min</span>
+          </header>
+
+          <div class="mt-3 flex flex-col gap-2">
+            @for (entry of day.entries; track entry.id) {
+              <article class="teacher-entry-row">
+                <span
+                  class="teacher-entry-row__color"
+                  [ngStyle]="{ 'background-color': entry.yogaClass.color }"
+                  aria-hidden="true"></span>
+
+                <div class="teacher-entry-row__main">
+                  <strong>{{ entry.yogaClass.name }}</strong>
+                  <span class="teacher-entry-row__meta">{{ entry.start | date:'HH:mm' }} - {{ entry.end | date:'HH:mm' }}</span>
+                </div>
+
+                <div class="teacher-entry-row__pill">
+                  <mat-icon>self_improvement</mat-icon>
+                  <span>{{ formatLevel(entry.level) }}</span>
+                </div>
+
+                <div class="teacher-entry-row__pill">
+                  <mat-icon>hourglass_bottom</mat-icon>
+                  <span>{{ getDurationInMinutes(entry) }} Min</span>
+                </div>
+              </article>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

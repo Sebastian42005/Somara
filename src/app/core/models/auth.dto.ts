@@ -10,6 +10,10 @@ export interface LoginRequestDto {
   password: string;
 }
 
+export interface UpdateProfileRequestDto {
+  username: string;
+}
+
 export interface AuthResponseDto {
   token: string;
   username: string;

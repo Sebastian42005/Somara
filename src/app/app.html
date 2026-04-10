@@ -4,6 +4,9 @@
     <a class="nav-link" routerLink="/" routerLinkActive="nav-link--active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
     <a class="nav-link" routerLink="/classes" routerLinkActive="nav-link--active">Classes</a>
     <a class="nav-link" routerLink="/timetable" routerLinkActive="nav-link--active">Timetable</a>
+    @if (isTeacher()) {
+      <a class="nav-link" routerLink="/teacher" routerLinkActive="nav-link--active">Lehrerbereich</a>
+    }
     <a class="nav-link" routerLink="/pricing" routerLinkActive="nav-link--active">Pricing</a>
     @if (isAdmin()) {
       <a class="nav-link" routerLink="/admin" routerLinkActive="nav-link--active">Admin</a>
@@ -16,6 +19,14 @@
         <app-profile-picture></app-profile-picture>
       </button>
       <mat-menu #userMenu="matMenu">
+        <button mat-menu-item type="button" routerLink="/profile">
+          <mat-icon>person</mat-icon>
+          <span>Profil</span>
+        </button>
+        <button mat-menu-item type="button" routerLink="/settings">
+          <mat-icon>settings</mat-icon>
+          <span>Einstellungen</span>
+        </button>
         <button mat-menu-item type="button" (click)="logout()">
           <mat-icon>logout</mat-icon>
           <span>Logout</span>

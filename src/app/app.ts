@@ -30,7 +30,8 @@ export class App {
   protected readonly title = signal('Somara');
   protected readonly isAuthenticated = this.store.isAuthenticated;
   protected readonly username = computed(() => this.store.auth()?.username ?? '');
-  protected readonly isAdmin = computed(() => this.store.auth()?.role.trim().toLowerCase() == 'admin');
+  protected readonly isAdmin = computed(() => this.store.auth()?.role.trim().toLowerCase() === 'admin');
+  protected readonly isTeacher = computed(() => this.store.auth()?.role.trim().toLowerCase() === 'teacher');
 
   openAuthDialog(): void {
     this.store.clearErrors();
