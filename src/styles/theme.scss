@@ -100,16 +100,19 @@ $somara-material-dark-theme: mat.m2-define-dark-theme((
 
 :root {
   --somara-primary-light: #{$somara-primary-light};
+  --somara-on-primary-light: #{somara-contrast-color($somara-primary-light)};
   --somara-secondary-light: #{$somara-secondary-light};
   --somara-background-light: #{$somara-background-light};
   --somara-text-light: #{$somara-text-light};
 
   --somara-primary-dark: #{$somara-primary-dark};
+  --somara-on-primary-dark: #{somara-contrast-color($somara-primary-dark)};
   --somara-secondary-dark: #{$somara-secondary-dark};
   --somara-background-dark: #{$somara-background-dark};
   --somara-text-dark: #{$somara-text-dark};
 
   --somara-primary: var(--somara-primary-light);
+  --somara-on-primary: var(--somara-on-primary-light);
   --somara-primary-2: color-mix(in srgb, var(--somara-primary) 80%, var(--somara-background));
   --somara-secondary: var(--somara-secondary-light);
   --somara-background: var(--somara-background-light);
@@ -125,6 +128,7 @@ $somara-material-dark-theme: mat.m2-define-dark-theme((
 
 :root[data-theme="light"] {
   --somara-primary: var(--somara-primary-light);
+  --somara-on-primary: var(--somara-on-primary-light);
   --somara-secondary: var(--somara-secondary-light);
   --somara-background: var(--somara-background-light);
   --somara-text: var(--somara-text-light);
@@ -139,6 +143,7 @@ $somara-material-dark-theme: mat.m2-define-dark-theme((
 
 :root[data-theme="dark"] {
   --somara-primary: var(--somara-primary-dark);
+  --somara-on-primary: var(--somara-on-primary-dark);
   --somara-secondary: var(--somara-secondary-dark);
   --somara-background: var(--somara-background-dark);
   --somara-text: var(--somara-text-dark);

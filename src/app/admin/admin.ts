@@ -25,25 +25,36 @@ interface TeacherSummary {
     NgStyle,
     ProfilePicture,
   ],
-  templateUrl: './teachers.html',
-  styleUrl: './teachers.scss',
+  templateUrl: './admin.html',
+  styleUrl: './admin.scss',
 })
-export class Teachers {
+export class Admin {
   private readonly store = inject(SomaraSignalStore);
   private readonly dialog = inject(MatDialog);
 
-  readonly activeOverview = signal<'teachers' | 'timetable'>('teachers');
+  readonly activeOverview = signal<'teachers' | 'timetable' | 'classes'>('teachers');
 
   readonly teachers = this.store.teachers;
+  readonly classes = this.store.classes;
   readonly timetableEntries = this.store.timetableEntries;
 
   readonly isTeachersLoading = this.store.isTeachersLoading;
+  readonly isClassesLoading = this.store.isClassesLoading;
   readonly isTimetableLoading = this.store.isTimetableLoading;
 
-  readonly isBusy = computed(() => this.isTeachersLoading() || this.isTimetableLoading());
-  readonly errorMessage = computed(() => this.store.teachersError() ?? this.store.timetableError());
+  readonly isBusy = computed(() =>
+    this.isTeachersLoading()
+    || this.isClassesLoading()
+    || this.isTimetableLoading(),
+  );
+  readonly errorMessage = computed(() =>
+    this.store.teachersError()
+    ?? this.store.classesError()
+    ?? this.store.timetableError(),
+  );
 
   readonly teacherCount = computed(() => this.teachers().length);
+  readonly classCount = computed(() => this.classes().length);
   readonly entryCount = computed(() => this.timetableEntries().length);
   readonly upcomingEntryCount = computed(() => this.getUpcomingEntries(this.sortedEntries()).length);
 
@@ -101,6 +112,7 @@ export class Teachers {
 
     await Promise.allSettled([
       this.store.loadTeachers(),
+      this.store.loadClasses(),
       this.store.loadTimetableEntries(),
     ]);
   }
@@ -142,13 +154,29 @@ export class Teachers {
     });
   }
 
-  getTeacherProfilePicture(id: string) {
-    return apiBasePath + `/teachers/${id}/profile-image`
-  }
+  async onCreateClassClick(): Promise<void> {
+    const { CreateClassDialog } = await import(
+      '../dialog/create-class-dialog/create-class-dialog'
+    );
 
+    const dialogRef = this.dialog.open(CreateClassDialog, {
+      minWidth: DialogSize.SMALL.minWidth,
+      maxWidth: DialogSize.SMALL.maxWidth,
+    });
+
+    dialogRef.afterClosed().subscribe((created) => {
+      if (created) {
+        void this.reloadData();
+      }
+    });
+  }
 
   getDurationInMinutes(entry: TimetableEntry): number {
     return getMinutesDifference(entry.start, entry.end);
+  }
+
+  getClassImageUrl(classId: number): string {
+    return `${apiBasePath}/yoga-classes/${classId}/image`;
   }
 
   showTeachersOverview(): void {
@@ -157,6 +185,10 @@ export class Teachers {
 
   showTimetableOverview(): void {
     this.activeOverview.set('timetable');
+  }
+
+  showClassesOverview(): void {
+    this.activeOverview.set('classes');
   }
 
   private getUpcomingEntries(entries: TimetableEntry[]): TimetableEntry[] {

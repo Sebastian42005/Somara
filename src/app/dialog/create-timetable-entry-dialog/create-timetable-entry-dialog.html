@@ -6,15 +6,22 @@
     class="create-entry-form"
     [formGroup]="entryForm"
     (ngSubmit)="submit()">
-    <label class="flex flex-col gap-1.5" for="entry-name">
-      <span class="text-sm font-medium text-[var(--somara-text)]">Name</span>
-      <input
-        id="entry-name"
-        class="rounded-lg border-2 border-[var(--somara-secondary)] bg-[var(--somara-background)] px-3 py-2 text-[var(--somara-text)] outline-none transition focus:border-[var(--somara-secondary)] focus:ring-4 focus:ring-black/10"
-        type="text"
-        formControlName="name"
-        autocomplete="off"/>
-    </label>
+    <mat-form-field appearance="outline" class="secondary-mat-form-field">
+      <mat-label>Klasse</mat-label>
+      <mat-select formControlName="yogaClassId" [disabled]="isClassesLoading()">
+        @for (classItem of classes(); track classItem.id) {
+          <mat-option [value]="classItem.id">
+            <span class="flex items-center gap-2">
+              <span
+                class="class-color-dot"
+                [style.background-color]="classItem.color"
+                aria-hidden="true"></span>
+              <span>{{ classItem.name }}</span>
+            </span>
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
 
     <div class="grid gap-3 sm:grid-cols-2">
       <mat-form-field appearance="outline" class="secondary-mat-form-field">
@@ -39,7 +46,7 @@
         <span class="text-sm font-medium text-[var(--somara-text)]">Startzeit</span>
         <input
           id="entry-start-time"
-          class="rounded-lg border-2 border-[var(--somara-secondary)] bg-[var(--somara-background)] px-3 py-2 text-[var(--somara-text)] outline-none transition focus:border-[var(--somara-secondary)] focus:ring-4 focus:ring-black/10"
+          class="input-base"
           type="time"
           formControlName="startTime"/>
       </label>
@@ -48,7 +55,7 @@
         <span class="text-sm font-medium text-[var(--somara-text)]">Endzeit</span>
         <input
           id="entry-end-time"
-          class="rounded-lg border-2 border-[var(--somara-secondary)] bg-[var(--somara-background)] px-3 py-2 text-[var(--somara-text)] outline-none transition focus:border-[var(--somara-secondary)] focus:ring-4 focus:ring-black/10"
+          class="input-base"
           type="time"
           formControlName="endTime"/>
       </label>
@@ -57,7 +64,7 @@
         <span class="text-sm font-medium text-[var(--somara-text)]">Dauer (Minuten)</span>
         <input
           id="entry-duration-minutes"
-          class="rounded-lg border-2 border-[var(--somara-secondary)] bg-[var(--somara-background)] px-3 py-2 text-[var(--somara-text)] outline-none transition focus:border-[var(--somara-secondary)] focus:ring-4 focus:ring-black/10"
+          class="input-base"
           type="number"
           min="1"
           max="1439"
@@ -88,44 +95,17 @@
       </mat-select>
     </mat-form-field>
 
-    <label class="w-52 flex flex-col gap-1.5" for="entry-color">
-      <span class="text-sm font-medium text-[var(--somara-text)]">Farbe</span>
-      <div class="flex items-center gap-2">
-        <input
-          id="entry-color"
-          class="w-40 rounded-lg border-2 border-[var(--somara-secondary)] px-3 py-2 outline-none transition focus:border-[var(--somara-secondary)] focus:ring-4 focus:ring-black/10"
-          formControlName="color"
-          [style.background-color]="entryForm.controls.color.value"
-          [style.color]="getColorInputTextColor(entryForm.controls.color.value)"/>
-        <input
-          #nativeColorPicker
-          class="native-color-picker"
-          type="color"
-          [value]="entryForm.controls.color.value"
-          (input)="onColorPickerChange(nativeColorPicker.value)"
-          aria-label="Farbe mit Color Picker auswaehlen" />
-      </div>
-    </label>
+    <section class="preview-section">
+      <h6 class="preview-title">Vorschau</h6>
 
-
-    @if (isTimetableColorsLoading()) {
-      <p class="text-sm text-[var(--somara-text)]/80">Lade Vorschläge...</p>
-    } @else if (colorSuggestions().length > 0) {
-      <span class="text-sm font-medium text-[var(--somara-text)]">Vorschläge</span>
-      <div class="suggestion-grid">
-        @for (suggestion of colorSuggestions(); track suggestion.name + '-' + suggestion.colorHex) {
-          <button
-            type="button"
-            class="suggestion-chip"
-            (click)="applySuggestion(suggestion)">
-              <span
-                class="suggestion-color"
-                [style.background-color]="suggestion.colorHex"></span>
-            <span>{{ suggestion.name }}</span>
-          </button>
-        }
-      </div>
-    }
+      @if (previewEntry(); as preview) {
+        <app-timetable-entry [entry]="preview"></app-timetable-entry>
+      } @else {
+        <p class="preview-empty">
+          Waehle Klasse, Lehrer und gueltige Zeiten aus, um die Vorschau zu sehen.
+        </p>
+      }
+    </section>
 
   </form>
 

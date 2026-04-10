@@ -3,7 +3,7 @@
     <div>
       <h4 class="mb-2">Adminbereich</h4>
       <p class="teachers-page__subtitle">
-        Verwalte Lehrer und behalte den Stundenplan jederzeit im Überblick.
+        Verwalte Lehrer, Klassen und behalte den Stundenplan jederzeit im Überblick.
       </p>
     </div>
 
@@ -26,7 +26,7 @@
           <mat-icon>person_add</mat-icon>
           Lehrer erstellen
         </button>
-      } @else {
+      } @else if (activeOverview() === 'timetable') {
         <button
           type="button"
           class="button-base button-raised"
@@ -34,6 +34,15 @@
           (click)="onCreateEntryClick()">
           <mat-icon>event_available</mat-icon>
           Eintrag erstellen
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="button-base button-raised"
+          [disabled]="isBusy()"
+          (click)="onCreateClassClick()">
+          <mat-icon>school</mat-icon>
+          Klasse erstellen
         </button>
       }
     </div>
@@ -57,6 +66,15 @@
       (click)="showTimetableOverview()">
       Stundenplan-Übersicht
     </button>
+
+    <button
+      type="button"
+      class="button-base"
+      [class.button-raised]="activeOverview() === 'classes'"
+      [class.button-stroked]="activeOverview() !== 'classes'"
+      (click)="showClassesOverview()">
+      Klassen-Übersicht
+    </button>
   </div>
 
   @if (errorMessage()) {
@@ -67,6 +85,11 @@
     <article class="stat-card">
       <span class="stat-card__label">Lehrer</span>
       <strong class="stat-card__value">{{ teacherCount() }}</strong>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-card__label">Klassen</span>
+      <strong class="stat-card__value">{{ classCount() }}</strong>
     </article>
 
     <article class="stat-card">
@@ -116,7 +139,7 @@
         </div>
       }
     </section>
-  } @else {
+  } @else if (activeOverview() === 'timetable') {
     <section class="mt-8">
       <h5 class="mb-3">Stundenplan-Übersicht</h5>
 
@@ -126,9 +149,9 @@
         <p class="text-sm text-[var(--somara-text)]/80">Noch keine Stundenplan-Einträge vorhanden.</p>
       } @else {
         <div class="entry-list">
-          @for (entry of overviewEntries(); track entry.start.getTime() + '-' + entry.name + '-' + entry.teacher.id) {
+          @for (entry of overviewEntries(); track entry.start.getTime() + '-' + entry.yogaClass.name + '-' + entry.teacher.id) {
             <article class="entry-row">
-              <span class="entry-row__color" [ngStyle]="{ 'background-color': entry.color }"></span>
+              <span class="entry-row__color" [ngStyle]="{ 'background-color': entry.yogaClass.color }"></span>
 
               <div class="entry-row__time">
                 <strong>{{ entry.start | date:'dd.MM.yyyy' }}</strong>
@@ -136,7 +159,6 @@
               </div>
 
               <div class="entry-row__course">
-                <strong>{{ entry.name }}</strong>
                 <span>{{ entry.level }}</span>
               </div>
 
@@ -149,6 +171,43 @@
               <div class="entry-row__duration">
                 <mat-icon>hourglass_bottom</mat-icon>
                 <span>{{ getDurationInMinutes(entry) }} Min</span>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  } @else {
+    <section class="mt-8">
+      <h5 class="mb-3">Klassen-Übersicht</h5>
+
+      @if (isClassesLoading()) {
+        <p class="text-sm text-[var(--somara-text)]/80">Klassen werden geladen...</p>
+      } @else if (classes().length === 0) {
+        <p class="text-sm text-[var(--somara-text)]/80">Noch keine Klassen vorhanden.</p>
+      } @else {
+        <div class="classes-grid">
+          @for (classItem of classes(); track classItem.id) {
+            <article class="class-card">
+              <span
+                class="class-card__color"
+                [ngStyle]="{ 'background-color': classItem.color }"
+                aria-hidden="true"></span>
+
+              @if (classItem.hasImage) {
+                <img
+                  class="class-card__image"
+                  [src]="getClassImageUrl(classItem.id)"
+                  [alt]="classItem.name + ' Bild'" />
+              } @else {
+                <div class="class-card__image-placeholder" aria-hidden="true">
+                  <mat-icon>school</mat-icon>
+                </div>
+              }
+
+              <div class="class-card__meta">
+                <strong>{{ classItem.name }}</strong>
+                <span>{{ classItem.description }}</span>
               </div>
             </article>
           }

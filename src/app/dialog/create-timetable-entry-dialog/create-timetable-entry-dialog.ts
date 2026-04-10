@@ -1,5 +1,5 @@
-import { computed, Component, DestroyRef, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -7,9 +7,11 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { merge } from 'rxjs';
-import { ScheduleEntryLevel, ScheduleEntrySuggestionDto } from '../../core/models/timetable-entry.dto';
+import { map, merge, startWith } from 'rxjs';
+import { ScheduleEntryLevel } from '../../core/models/timetable-entry.dto';
 import { SomaraSignalStore } from '../../core/store/somara-signal.store';
+import { TimetableEntryComponent } from '../../timetable/timetable-entry/timetable-entry';
+import { TimetableEntry } from '../../timetable/models/timetable-entry.model';
 
 const TIME_PATTERN = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
 
@@ -26,6 +28,7 @@ interface CreateTimetableEntryDialogData {
     MatInputModule,
     MatDatepickerModule,
     MatSelectModule,
+    TimetableEntryComponent,
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './create-timetable-entry-dialog.html',
@@ -43,7 +46,7 @@ export class CreateTimetableEntryDialog {
   private readonly maxMinutesOfDay = 23 * 60 + 59;
 
   readonly teachers = this.store.teachers;
-  readonly colorSuggestions = this.store.timetableEntryColors;
+  readonly classes = this.store.classes;
   readonly levelOptions: ReadonlyArray<{ value: ScheduleEntryLevel; label: string }> = [
     { value: 'beginner', label: 'Beginner' },
     { value: 'advanced', label: 'Advanced' },
@@ -51,35 +54,77 @@ export class CreateTimetableEntryDialog {
   ];
 
   readonly isTeachersLoading = this.store.isTeachersLoading;
+  readonly isClassesLoading = this.store.isClassesLoading;
   readonly isTimetableLoading = this.store.isTimetableLoading;
-  readonly isTimetableColorsLoading = this.store.isTimetableColorsLoading;
 
   readonly isSubmitting = signal(false);
   readonly isBusy = computed(() =>
     this.isSubmitting()
     || this.isTimetableLoading()
-    || this.isTeachersLoading(),
+    || this.isTeachersLoading()
+    || this.isClassesLoading(),
   );
   readonly errorMessage = computed(() =>
     this.localErrorSignal()
     ?? this.store.timetableError()
     ?? this.store.teachersError()
-    ?? this.store.timetableColorsError(),
+    ?? this.store.classesError(),
   );
 
   readonly entryForm = this.fb.nonNullable.group(
     {
-      name: ['', [Validators.required, Validators.maxLength(120)]],
       level: ['beginner' as ScheduleEntryLevel, [Validators.required]],
       teacherId: [0, [Validators.required, Validators.min(1)]],
+      yogaClassId: [0, [Validators.required, Validators.min(1)]],
       date: [this.normalizeDate(this.data?.initialDate ?? new Date()), [Validators.required]],
       startTime: ['08:00', [Validators.required, Validators.pattern(TIME_PATTERN)]],
       endTime: ['09:00', [Validators.required, Validators.pattern(TIME_PATTERN)]],
       durationMinutes: [60, [Validators.required, Validators.min(1), Validators.max(this.maxMinutesOfDay)]],
-      color: ['#005F6A', [Validators.required, Validators.pattern(/^#([0-9a-fA-F]{6})$/)]],
     },
     { validators: [(control) => this.validateTimeRange(control)] },
   );
+  private readonly formValuesSignal = toSignal(
+    this.entryForm.valueChanges.pipe(
+      map(() => this.entryForm.getRawValue()),
+      startWith(this.entryForm.getRawValue()),
+    ),
+    { initialValue: this.entryForm.getRawValue() },
+  );
+  readonly previewEntry = computed<TimetableEntry | null>(() => {
+    const { level, teacherId, yogaClassId, date, startTime, endTime } = this.formValuesSignal();
+    const selectedTeacher = this.teachers().find((teacher) => teacher.id === teacherId) ?? null;
+    const selectedClass = this.classes().find((classItem) => classItem.id === yogaClassId) ?? null;
+
+    if (!selectedTeacher || !selectedClass || !date) {
+      return null;
+    }
+
+    const className = selectedClass.name.trim();
+    if (className.length === 0) {
+      return null;
+    }
+
+    const start = this.combineDateAndTime(date, startTime);
+    const end = this.combineDateAndTime(date, endTime);
+
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+      return null;
+    }
+
+    return {
+      name: className,
+      start,
+      end,
+      color: selectedClass.color,
+      yogaClass: {
+        id: selectedClass.id,
+        name: selectedClass.name,
+        color: selectedClass.color,
+      },
+      level,
+      teacher: selectedTeacher,
+    };
+  });
 
   constructor() {
     this.connectTimeDerivation();
@@ -96,20 +141,24 @@ export class CreateTimetableEntryDialog {
     }
 
     const {
-      name,
       level,
       teacherId,
+      yogaClassId,
       date,
       startTime,
       endTime,
-      color,
     } = this.entryForm.getRawValue();
 
-    const normalizedName = name.trim();
-    const normalizedColor = this.normalizeColorHex(color);
+    if (yogaClassId < 1) {
+      this.localErrorSignal.set('Bitte waehle eine Klasse aus.');
+      return;
+    }
 
-    if (normalizedName.length === 0 || normalizedColor === null) {
-      this.localErrorSignal.set('Bitte pruefe Name und Farbe.');
+    const selectedClass = this.classes().find((classItem) => classItem.id === yogaClassId) ?? null;
+    const derivedName = selectedClass?.name.trim() ?? '';
+
+    if (selectedClass === null || derivedName.length === 0) {
+      this.localErrorSignal.set('Bitte pruefe die ausgewaehlte Klasse.');
       return;
     }
 
@@ -125,12 +174,12 @@ export class CreateTimetableEntryDialog {
 
     try {
       await this.store.createTimetableEntry({
-        name: normalizedName,
+        name: derivedName,
         level,
         teacherId,
+        yogaClassId,
         start,
         end,
-        color: normalizedColor,
       });
       this.dialogRef.close(true);
     } catch {
@@ -144,36 +193,6 @@ export class CreateTimetableEntryDialog {
     this.dialogRef.close(false);
   }
 
-  applySuggestion(suggestion: ScheduleEntrySuggestionDto): void {
-    const normalizedColor = this.normalizeColorHex(suggestion.colorHex);
-
-    this.entryForm.patchValue({
-      name: suggestion.name,
-      color: normalizedColor ?? this.entryForm.controls.color.value,
-    });
-  }
-
-  onColorPickerChange(value: string): void {
-    const normalized = this.normalizeColorHex(value);
-    if (normalized !== null) {
-      this.entryForm.controls.color.setValue(normalized);
-    }
-  }
-
-  getColorInputTextColor(colorValue: string): string {
-    const normalized = this.normalizeColorHex(colorValue);
-    if (normalized === null) {
-      return '#111111';
-    }
-
-    const red = Number.parseInt(normalized.slice(1, 3), 16);
-    const green = Number.parseInt(normalized.slice(3, 5), 16);
-    const blue = Number.parseInt(normalized.slice(5, 7), 16);
-    const luminance = (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255;
-
-    return luminance > 0.6 ? '#0f172a' : '#f8fafc';
-  }
-
   private async loadInitialData(): Promise<void> {
     if (this.teachers().length === 0) {
       try {
@@ -183,17 +202,22 @@ export class CreateTimetableEntryDialog {
       }
     }
 
-    if (this.colorSuggestions().length === 0) {
+    if (this.classes().length === 0) {
       try {
-        await this.store.loadTimetableEntryColors();
+        await this.store.loadClasses();
       } catch {
-        // Suggestion loading errors are optional; dialog stays usable.
+        // Error state is managed in store and exposed in the template.
       }
     }
 
     const [firstTeacher] = this.teachers();
     if (firstTeacher && this.entryForm.controls.teacherId.value === 0) {
       this.entryForm.controls.teacherId.setValue(firstTeacher.id);
+    }
+
+    const [firstClass] = this.classes();
+    if (firstClass && this.entryForm.controls.yogaClassId.value === 0) {
+      this.entryForm.controls.yogaClassId.setValue(firstClass.id);
     }
   }
 
@@ -328,24 +352,4 @@ export class CreateTimetableEntryDialog {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
-  private normalizeColorHex(value: string): string | null {
-    const rawValue = value.trim();
-
-    if (rawValue.length === 0) {
-      return null;
-    }
-
-    const withHash = rawValue.startsWith('#') ? rawValue : `#${rawValue}`;
-
-    if (/^#[0-9a-fA-F]{6}$/.test(withHash)) {
-      return withHash.toUpperCase();
-    }
-
-    if (/^#[0-9a-fA-F]{3}$/.test(withHash)) {
-      const [, red, green, blue] = withHash;
-      return `#${red}${red}${green}${green}${blue}${blue}`.toUpperCase();
-    }
-
-    return null;
-  }
 }

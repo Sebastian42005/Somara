@@ -17,6 +17,10 @@ import {
   TeacherRequestDto,
   TeacherResponseDto,
 } from '../models/teacher.dto';
+import {
+  ClassResponseDto,
+  CreateClassRequestDto,
+} from '../models/class.dto';
 import { TimetableEntry } from '../../timetable/models/timetable-entry.model';
 
 interface RequestState {
@@ -33,11 +37,13 @@ export class SomaraSignalStore {
 
   private readonly authResponseSignal = signal<AuthResponseDto | null>(null);
   private readonly teachersSignal = signal<TeacherResponseDto[]>([]);
+  private readonly classesSignal = signal<ClassResponseDto[]>([]);
   private readonly timetableEntryResponsesSignal = signal<TimetableEntryResponseDto[]>([]);
   private readonly timetableEntryColorsSignal = signal<TimetableEntryColorDto[]>([]);
 
   private readonly authRequestStateSignal = signal<RequestState>({ loading: false, error: null });
   private readonly teachersRequestStateSignal = signal<RequestState>({ loading: false, error: null });
+  private readonly classesRequestStateSignal = signal<RequestState>({ loading: false, error: null });
   private readonly timetableRequestStateSignal = signal<RequestState>({ loading: false, error: null });
   private readonly timetableColorsRequestStateSignal = signal<RequestState>({ loading: false, error: null });
 
@@ -46,22 +52,32 @@ export class SomaraSignalStore {
   readonly isAuthenticated = computed(() => this.token() !== null);
 
   readonly teachers = computed(() => this.teachersSignal());
+  readonly classes = computed(() => this.classesSignal());
   readonly timetableEntryResponses = computed(() => this.timetableEntryResponsesSignal());
   readonly timetableEntryColors = computed(() => this.timetableEntryColorsSignal());
   readonly timetableEntries = computed<TimetableEntry[]>(() =>
-    this.timetableEntryResponsesSignal().map((entry) => ({
-      name: entry.name,
-      start: new Date(entry.start),
-      end: new Date(entry.end),
-      color: entry.color,
-      level: entry.level,
-      teacher: {
-        id: entry.teacher.id,
-        name: entry.teacher.name,
-        description: entry.teacher.description ?? null,
-        profileImage: entry.teacher.profileImage ?? null,
-      },
-    })),
+    this.timetableEntryResponsesSignal().map((entry) => {
+      const entryColor = entry.yogaClass?.color ?? entry.color ?? '#0F766E';
+
+      return {
+        name: entry.name,
+        start: new Date(entry.start),
+        end: new Date(entry.end),
+        color: entryColor,
+        yogaClass: {
+          id: entry.yogaClass?.id ?? 0,
+          name: entry.yogaClass?.name ?? 'Klasse',
+          color: entryColor,
+        },
+        level: entry.level,
+        teacher: {
+          id: entry.teacher.id,
+          name: entry.teacher.name,
+          description: entry.teacher.description ?? null,
+          profileImage: entry.teacher.profileImage ?? null,
+        },
+      };
+    }),
   );
 
   readonly isAuthLoading = computed(() => this.authRequestStateSignal().loading);
@@ -69,6 +85,9 @@ export class SomaraSignalStore {
 
   readonly isTeachersLoading = computed(() => this.teachersRequestStateSignal().loading);
   readonly teachersError = computed(() => this.teachersRequestStateSignal().error);
+
+  readonly isClassesLoading = computed(() => this.classesRequestStateSignal().loading);
+  readonly classesError = computed(() => this.classesRequestStateSignal().error);
 
   readonly isTimetableLoading = computed(() => this.timetableRequestStateSignal().loading);
   readonly timetableError = computed(() => this.timetableRequestStateSignal().error);
@@ -120,6 +139,7 @@ export class SomaraSignalStore {
   logout(): void {
     this.setAuthResponse(null);
     this.teachersSignal.set([]);
+    this.classesSignal.set([]);
     this.timetableEntryResponsesSignal.set([]);
     this.authRequestStateSignal.set({ loading: false, error: null });
   }
@@ -161,6 +181,73 @@ export class SomaraSignalStore {
       return response;
     } catch (error) {
       this.teachersRequestStateSignal.set({
+        loading: false,
+        error: this.toErrorMessage(error),
+      });
+      throw error;
+    }
+  }
+
+  async loadClasses(): Promise<ClassResponseDto[]> {
+    this.classesRequestStateSignal.set({ loading: true, error: null });
+
+    try {
+      const response = await firstValueFrom(
+        this.http.get<ClassResponseDto[]>(
+          `${apiBasePath}/yoga-classes`,
+          this.authOptions(),
+        ),
+      );
+      this.classesSignal.set(response);
+      this.classesRequestStateSignal.set({ loading: false, error: null });
+      return response;
+    } catch (error) {
+      this.classesRequestStateSignal.set({
+        loading: false,
+        error: this.toErrorMessage(error),
+      });
+      throw error;
+    }
+  }
+
+  async createClass(request: CreateClassRequestDto): Promise<ClassResponseDto> {
+    this.classesRequestStateSignal.set({ loading: true, error: null });
+
+    try {
+      const createdClass = await firstValueFrom(
+        this.http.post<ClassResponseDto>(
+          `${apiBasePath}/yoga-classes`,
+          {
+            name: request.name,
+            description: request.description,
+            color: request.color,
+          },
+          this.authOptions(),
+        ),
+      );
+
+      if (request.image) {
+        const imagePayload = new FormData();
+        imagePayload.append('file', request.image);
+
+        await firstValueFrom(
+          this.http.put<void>(
+            `${apiBasePath}/yoga-classes/${createdClass.id}/image`,
+            imagePayload,
+            this.authOptions(),
+          ),
+        );
+      }
+
+      const classToInsert: ClassResponseDto = request.image
+        ? { ...createdClass, hasImage: true }
+        : createdClass;
+
+      this.classesSignal.update((classes) => [...classes, classToInsert]);
+      this.classesRequestStateSignal.set({ loading: false, error: null });
+      return classToInsert;
+    } catch (error) {
+      this.classesRequestStateSignal.set({
         loading: false,
         error: this.toErrorMessage(error),
       });
@@ -379,6 +466,7 @@ export class SomaraSignalStore {
   clearErrors(): void {
     this.authRequestStateSignal.update((state) => ({ ...state, error: null }));
     this.teachersRequestStateSignal.update((state) => ({ ...state, error: null }));
+    this.classesRequestStateSignal.update((state) => ({ ...state, error: null }));
     this.timetableRequestStateSignal.update((state) => ({ ...state, error: null }));
     this.timetableColorsRequestStateSignal.update((state) => ({ ...state, error: null }));
   }
@@ -486,7 +574,8 @@ export class SomaraSignalStore {
       name: request.name,
       start: this.toIsoString(request.start),
       end: this.toIsoString(request.end),
-      color: request.color,
+      yogaClassId: request.yogaClassId,
+      classId: request.yogaClassId,
       level: request.level,
       teacherId: request.teacherId,
     };

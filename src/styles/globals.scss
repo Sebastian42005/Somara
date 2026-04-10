@@ -112,6 +112,48 @@ button {
   cursor: pointer;
 }
 
+.input-base,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not(.mat-mdc-input-element),
+textarea,
+select {
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid color-mix(in srgb, var(--somara-secondary) 45%, transparent);
+  border-radius: 0.625rem;
+  color: var(--somara-text);
+  background-color: transparent;
+  caret-color: var(--somara-secondary);
+  line-height: 1.3;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 100ms ease;
+
+  &::placeholder {
+    color: color-mix(in srgb, var(--somara-text) 58%, transparent);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--somara-secondary) 65%, transparent);
+    background-color: color-mix(in srgb, var(--somara-secondary) 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--somara-text);
+    outline-offset: 2px;
+    border-color: var(--somara-secondary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--somara-secondary) 16%, transparent);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.mat-mdc-input-element {
+  background-color: transparent !important;
+}
+
 // Custom Class Designs
 
 .primary-bg {
@@ -262,5 +304,7 @@ button {
 }
 
 :root {
-  --mat-dialog-supporting-text-color: var(--somara-text) !important;
+  --mat-dialog-container-color: var(--somara-primary) !important;
+  --mat-dialog-subhead-color: var(--somara-on-primary) !important;
+  --mat-dialog-supporting-text-color: var(--somara-on-primary) !important;
 }

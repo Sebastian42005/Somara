@@ -99,6 +99,10 @@ export class Timetable {
     return filterEntriesForTimeOfDay(entriesForDay, timeOfDay);
   }
 
+  hasEntriesForTimeOfDay(timeOfDay: TimeOfDay): boolean {
+    return this.visibleDays().some((day) => this.getEntriesForDayAndTimeOfDay(day, timeOfDay).length > 0);
+  }
+
   private filterEntriesForDate(entries: TimetableEntry[], date: Date): TimetableEntry[] {
     return entries
       .filter((entry) => this.isSameCalendarDate(entry.start, date))

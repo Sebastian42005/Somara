@@ -1,16 +1,9 @@
 <div
   class="card-clickable"
-  [ngStyle]="{ 'background-color': entry().color + '99'}">
-  <span class="font-bold">{{ entry().name }}</span>
+  [ngStyle]="{ 'background-color': entry().yogaClass.color + '99'}">
+  <span class="font-bold">{{ entry().yogaClass.name }}</span>
   <div class="flex flex-row items-center gap-2">
-    @if (entry().teacher.profileImage) {
-      <img
-        class="h-5 w-5 rounded-full border border-[var(--somara-secondary)] object-cover"
-        [src]="entry().teacher.profileImage"
-        [alt]="entry().teacher.name + ' Profilbild'" />
-    } @else {
-      <mat-icon>person</mat-icon>
-    }
+    <mat-icon>person</mat-icon>
     <span>{{ entry().teacher.name }}</span>
   </div>
   <div class="flex flex-row items-center gap-2">

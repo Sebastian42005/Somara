@@ -6,13 +6,15 @@ import {
   getMinutesDifference,
   TimetableEntry,
 } from '../models/timetable-entry.model';
+import { ProfilePicture } from '../../components/profile-picture/profile-picture';
 
 @Component({
   selector: 'app-timetable-entry',
   imports: [
     MatIcon,
     TimePipe,
-    NgStyle
+    NgStyle,
+    ProfilePicture
   ],
   templateUrl: './timetable-entry.html',
 })

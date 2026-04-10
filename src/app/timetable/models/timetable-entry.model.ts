@@ -6,11 +6,16 @@ export interface Teacher {
   description?: string | null;
 }
 
-export interface TimetableEntry {
+export interface TimetableYogaClass {
+  id: number;
   name: string;
+  color: string;
+}
+
+export interface TimetableEntry {
   start: Date;
   end: Date;
-  color: string;
+  yogaClass: TimetableYogaClass;
   level: ScheduleEntryLevel;
   teacher: Teacher;
 }

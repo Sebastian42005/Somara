@@ -2,11 +2,18 @@ import { TeacherResponseDto } from './teacher.dto';
 
 export type ScheduleEntryLevel = 'beginner' | 'advanced' | 'all levels';
 
+export interface ScheduleEntryYogaClassDto {
+  id: number;
+  name: string;
+  color: string;
+}
+
 export interface ScheduleEntryRequestDto {
   name: string;
   start: string;
   end: string;
-  color: string;
+  yogaClassId: number;
+  classId?: number;
   level: ScheduleEntryLevel;
   teacherId: number;
 }
@@ -15,7 +22,7 @@ export interface ScheduleEntryRequestInput {
   name: string;
   start: Date | string;
   end: Date | string;
-  color: string;
+  yogaClassId: number;
   level: ScheduleEntryLevel;
   teacherId: number;
 }
@@ -25,7 +32,8 @@ export interface ScheduleEntryResponseDto {
   name: string;
   start: string;
   end: string;
-  color: string;
+  color?: string;
+  yogaClass?: ScheduleEntryYogaClassDto | null;
   level: ScheduleEntryLevel;
   teacher: TeacherResponseDto;
 }

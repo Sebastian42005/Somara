@@ -4,6 +4,7 @@ import type {
   ScheduleEntryRequestInput,
   ScheduleEntryResponseDto,
   ScheduleEntrySuggestionDto,
+  ScheduleEntryYogaClassDto,
 } from './schedule-entry.dto';
 
 export type {
@@ -12,6 +13,7 @@ export type {
   ScheduleEntryRequestInput,
   ScheduleEntryResponseDto,
   ScheduleEntrySuggestionDto,
+  ScheduleEntryYogaClassDto,
 };
 
 export type TimetableEntryLevel = ScheduleEntryLevel;

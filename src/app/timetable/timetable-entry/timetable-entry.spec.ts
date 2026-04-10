@@ -18,6 +18,11 @@ describe('TimetableEntryComponent', () => {
       start: new Date('2026-04-09T08:00:00.000Z'),
       end: new Date('2026-04-09T09:00:00.000Z'),
       color: '#005F6A',
+      yogaClass: {
+        id: 2,
+        name: 'Yoga Basics',
+        color: '#005F6A',
+      },
       level: 'beginner',
       teacher: {
         id: 1,

@@ -69,24 +69,6 @@
   padding: 0.75rem;
 }
 
-.teacher-avatar {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 9999px;
-  border: 2px solid color-mix(in srgb, var(--somara-secondary) 60%, transparent);
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.teacher-avatar--fallback {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--somara-secondary);
-  background: color-mix(in srgb, var(--somara-secondary) 15%, transparent);
-  font-weight: 700;
-}
-
 .teacher-card__meta {
   display: flex;
   flex-direction: column;
@@ -101,6 +83,65 @@
 .teacher-card__description {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.classes-grid {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.class-card {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.85rem;
+  border: 2px solid color-mix(in srgb, var(--somara-secondary) 35%, transparent);
+  background: color-mix(in srgb, var(--somara-secondary) 7%, transparent);
+  padding: 0.75rem;
+}
+
+.class-card__color {
+  width: 0.65rem;
+  height: 3.2rem;
+  border-radius: 9999px;
+}
+
+.class-card__image,
+.class-card__image-placeholder {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.75rem;
+  border: 2px solid color-mix(in srgb, var(--somara-secondary) 50%, transparent);
+  flex-shrink: 0;
+}
+
+.class-card__image {
+  object-fit: cover;
+}
+
+.class-card__image-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--somara-secondary) 12%, transparent);
+  color: color-mix(in srgb, var(--somara-secondary) 70%, var(--somara-text));
+}
+
+.class-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.class-card__meta span {
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--somara-text) 72%, transparent);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -146,14 +187,6 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-}
-
-.entry-row__teacher-avatar {
-  width: 1.3rem;
-  height: 1.3rem;
-  border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--somara-secondary) 45%, transparent);
-  object-fit: cover;
 }
 
 @media (max-width: 960px) {
