@@ -1,0 +1,159 @@
+<section class="teachers-page primary-bg m-10 p-6 rounded-2xl shadow-2xl">
+  <header class="teachers-page__header">
+    <div>
+      <h4 class="mb-2">Adminbereich</h4>
+      <p class="teachers-page__subtitle">
+        Verwalte Lehrer und behalte den Stundenplan jederzeit im Überblick.
+      </p>
+    </div>
+
+    <div class="teachers-page__actions">
+      <button
+        type="button"
+        class="button-base button-stroked"
+        [disabled]="isBusy()"
+        (click)="reloadData()">
+        <mat-icon>refresh</mat-icon>
+        Aktualisieren
+      </button>
+
+      @if (activeOverview() === 'teachers') {
+        <button
+          type="button"
+          class="button-base button-raised"
+          [disabled]="isBusy()"
+          (click)="onCreateTeacherClick()">
+          <mat-icon>person_add</mat-icon>
+          Lehrer erstellen
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="button-base button-raised"
+          [disabled]="isBusy()"
+          (click)="onCreateEntryClick()">
+          <mat-icon>event_available</mat-icon>
+          Eintrag erstellen
+        </button>
+      }
+    </div>
+  </header>
+
+  <div class="overview-switch mt-4">
+    <button
+      type="button"
+      class="button-base"
+      [class.button-raised]="activeOverview() === 'teachers'"
+      [class.button-stroked]="activeOverview() !== 'teachers'"
+      (click)="showTeachersOverview()">
+      Lehrer-Übersicht
+    </button>
+
+    <button
+      type="button"
+      class="button-base"
+      [class.button-raised]="activeOverview() === 'timetable'"
+      [class.button-stroked]="activeOverview() !== 'timetable'"
+      (click)="showTimetableOverview()">
+      Stundenplan-Übersicht
+    </button>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="mt-3 text-sm text-red-700">{{ errorMessage() }}</p>
+  }
+
+  <section class="teachers-page__stats mt-5">
+    <article class="stat-card">
+      <span class="stat-card__label">Lehrer</span>
+      <strong class="stat-card__value">{{ teacherCount() }}</strong>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-card__label">Einträge gesamt</span>
+      <strong class="stat-card__value">{{ entryCount() }}</strong>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-card__label">Nächste Einträge</span>
+      <strong class="stat-card__value">{{ upcomingEntryCount() }}</strong>
+    </article>
+  </section>
+
+  @if (activeOverview() === 'teachers') {
+    <section class="mt-8">
+      <h5 class="mb-3">Alle Lehrer</h5>
+
+      @if (isTeachersLoading()) {
+        <p class="text-sm text-[var(--somara-text)]/80">Lehrer werden geladen...</p>
+      } @else if (teacherSummaries().length === 0) {
+        <p class="text-sm text-[var(--somara-text)]/80">Noch keine Lehrer vorhanden.</p>
+      } @else {
+        <div class="teachers-grid">
+          @for (summary of teacherSummaries(); track summary.teacher.id) {
+            <article class="teacher-card">
+              @if (summary.teacher) {
+                <app-profile-picture [teacher]="summary.teacher"></app-profile-picture>
+              }
+
+              <div class="teacher-card__meta">
+                <strong>{{ summary.teacher.name }}</strong>
+                @if (summary.teacher.description) {
+                  <span class="teacher-card__description">{{ summary.teacher.description }}</span>
+                }
+                <span>{{ summary.entryCount }} Einträge</span>
+
+                @if (summary.nextEntry) {
+                  <span>
+                    Nächster Termin: {{ summary.nextEntry.start | date:'dd.MM.yyyy HH:mm' }}
+                  </span>
+                } @else {
+                  <span>Noch kein geplanter Termin</span>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  } @else {
+    <section class="mt-8">
+      <h5 class="mb-3">Stundenplan-Übersicht</h5>
+
+      @if (isTimetableLoading()) {
+        <p class="text-sm text-[var(--somara-text)]/80">Einträge werden geladen...</p>
+      } @else if (overviewEntries().length === 0) {
+        <p class="text-sm text-[var(--somara-text)]/80">Noch keine Stundenplan-Einträge vorhanden.</p>
+      } @else {
+        <div class="entry-list">
+          @for (entry of overviewEntries(); track entry.start.getTime() + '-' + entry.name + '-' + entry.teacher.id) {
+            <article class="entry-row">
+              <span class="entry-row__color" [ngStyle]="{ 'background-color': entry.color }"></span>
+
+              <div class="entry-row__time">
+                <strong>{{ entry.start | date:'dd.MM.yyyy' }}</strong>
+                <span>{{ entry.start | date:'HH:mm' }} - {{ entry.end | date:'HH:mm' }}</span>
+              </div>
+
+              <div class="entry-row__course">
+                <strong>{{ entry.name }}</strong>
+                <span>{{ entry.level }}</span>
+              </div>
+
+              <div class="entry-row__teacher">
+                <app-profile-picture [teacher]="entry.teacher"></app-profile-picture>
+
+                <span>{{ entry.teacher.name }}</span>
+              </div>
+
+              <div class="entry-row__duration">
+                <mat-icon>hourglass_bottom</mat-icon>
+                <span>{{ getDurationInMinutes(entry) }} Min</span>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  }
+</section>

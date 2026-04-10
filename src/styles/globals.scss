@@ -247,3 +247,20 @@ button {
     filter: brightness(0.98);
   }
 }
+
+.secondary-mat-form-field {
+  --mat-form-field-outlined-outline-width: 2px;
+  --mat-form-field-outlined-focus-outline-width: 3px;
+  --mat-form-field-outlined-outline-color: var(--somara-secondary);
+  --mat-form-field-outlined-hover-outline-color: var(--somara-secondary);
+  --mat-form-field-outlined-focus-outline-color: var(--somara-secondary);
+  --mat-form-field-outlined-label-text-color: var(--somara-secondary);
+  --mat-form-field-outlined-hover-label-text-color: var(--somara-secondary);
+  --mat-form-field-outlined-focus-label-text-color: var(--somara-secondary);
+  --mat-form-field-outlined-input-text-color: var(--somara-secondary);
+  --mat-form-field-outlined-caret-color: var(--somara-secondary);
+}
+
+:root {
+  --mat-dialog-supporting-text-color: var(--somara-text) !important;
+}

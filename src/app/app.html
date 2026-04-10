@@ -1,10 +1,13 @@
-<div class="primary-bg w-full flex px-40 items-center justify-between h-20">
+<div class="somara primary-bg w-full flex px-40 items-center justify-between h-20">
   <img src="img.png" class="h-16 cursor-pointer" routerLink="/" aria-label="Go to home">
   <div class="flex flex-row gap-10">
     <a class="nav-link" routerLink="/" routerLinkActive="nav-link--active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
     <a class="nav-link" routerLink="/classes" routerLinkActive="nav-link--active">Classes</a>
     <a class="nav-link" routerLink="/timetable" routerLinkActive="nav-link--active">Timetable</a>
     <a class="nav-link" routerLink="/pricing" routerLinkActive="nav-link--active">Pricing</a>
+    @if (isAdmin()) {
+      <a class="nav-link" routerLink="/admin" routerLinkActive="nav-link--active">Admin</a>
+    }
   </div>
 
   @if (isAuthenticated()) {

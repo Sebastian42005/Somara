@@ -1,6 +1,5 @@
 <div class="flex flex-col primary-bg m-10 p-5 rounded-2xl shadow-2xl">
-  <div class="flex flex-row justify-between">
-    <div class="flex flex-wrap items-center gap-4 ml-10">
+  <div class="flex flex-wrap items-center gap-4 ml-10">
       <button class="button-rounded" type="button" (click)="showPreviousWeek()">
         <mat-icon>arrow_back_ios</mat-icon>
         Vorige Woche
@@ -9,7 +8,7 @@
         <mat-icon>arrow_forward_ios</mat-icon>
         Nächste Woche
       </button>
-      <mat-form-field appearance="outline" class="timetable-date-field w-full max-w-50 -mb-5">
+      <mat-form-field appearance="outline" class="secondary-mat-form-field w-full max-w-50 -mb-5">
         <mat-label>Tag auswählen</mat-label>
         <input
           matInput
@@ -28,8 +27,6 @@
           <mat-icon>restart_alt</mat-icon>
         </button>
       }
-    </div>
-    <button class="button-rounded">Eintrag erstellen</button>
   </div>
   <div class="grid gap-4 mt-4" [ngStyle]="daysGridStyle()">
     @for (currentDay of visibleDays(); track currentDay.isoDate) {

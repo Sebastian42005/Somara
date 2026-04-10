@@ -7,11 +7,13 @@ import {
   RegisterRequestDto,
 } from '../models/auth.dto';
 import {
-  ScheduleEntryRequestDto,
-  ScheduleEntryRequestInput,
-  ScheduleEntryResponseDto,
-} from '../models/schedule-entry.dto';
+  TimetableEntryRequestDto,
+  TimetableEntryRequestInput,
+  TimetableEntryResponseDto,
+  TimetableEntryColorDto,
+} from '../models/timetable-entry.dto';
 import {
+  CreateTeacherRequestDto,
   TeacherRequestDto,
   TeacherResponseDto,
 } from '../models/teacher.dto';
@@ -23,28 +25,31 @@ interface RequestState {
 }
 
 const AUTH_STORAGE_KEY = 'somara.auth';
+export const apiBasePath = 'http://localhost:8080/api';
 
 @Injectable({ providedIn: 'root' })
 export class SomaraSignalStore {
   private readonly http = inject(HttpClient);
-  private readonly apiBasePath = 'http://localhost:8080/api';
 
   private readonly authResponseSignal = signal<AuthResponseDto | null>(null);
   private readonly teachersSignal = signal<TeacherResponseDto[]>([]);
-  private readonly scheduleEntriesSignal = signal<ScheduleEntryResponseDto[]>([]);
+  private readonly timetableEntryResponsesSignal = signal<TimetableEntryResponseDto[]>([]);
+  private readonly timetableEntryColorsSignal = signal<TimetableEntryColorDto[]>([]);
 
   private readonly authRequestStateSignal = signal<RequestState>({ loading: false, error: null });
   private readonly teachersRequestStateSignal = signal<RequestState>({ loading: false, error: null });
-  private readonly scheduleRequestStateSignal = signal<RequestState>({ loading: false, error: null });
+  private readonly timetableRequestStateSignal = signal<RequestState>({ loading: false, error: null });
+  private readonly timetableColorsRequestStateSignal = signal<RequestState>({ loading: false, error: null });
 
   readonly auth = computed(() => this.authResponseSignal());
   readonly token = computed(() => this.authResponseSignal()?.token ?? null);
   readonly isAuthenticated = computed(() => this.token() !== null);
 
   readonly teachers = computed(() => this.teachersSignal());
-  readonly scheduleEntries = computed(() => this.scheduleEntriesSignal());
+  readonly timetableEntryResponses = computed(() => this.timetableEntryResponsesSignal());
+  readonly timetableEntryColors = computed(() => this.timetableEntryColorsSignal());
   readonly timetableEntries = computed<TimetableEntry[]>(() =>
-    this.scheduleEntriesSignal().map((entry) => ({
+    this.timetableEntryResponsesSignal().map((entry) => ({
       name: entry.name,
       start: new Date(entry.start),
       end: new Date(entry.end),
@@ -53,6 +58,8 @@ export class SomaraSignalStore {
       teacher: {
         id: entry.teacher.id,
         name: entry.teacher.name,
+        description: entry.teacher.description ?? null,
+        profileImage: entry.teacher.profileImage ?? null,
       },
     })),
   );
@@ -63,8 +70,10 @@ export class SomaraSignalStore {
   readonly isTeachersLoading = computed(() => this.teachersRequestStateSignal().loading);
   readonly teachersError = computed(() => this.teachersRequestStateSignal().error);
 
-  readonly isScheduleLoading = computed(() => this.scheduleRequestStateSignal().loading);
-  readonly scheduleError = computed(() => this.scheduleRequestStateSignal().error);
+  readonly isTimetableLoading = computed(() => this.timetableRequestStateSignal().loading);
+  readonly timetableError = computed(() => this.timetableRequestStateSignal().error);
+  readonly isTimetableColorsLoading = computed(() => this.timetableColorsRequestStateSignal().loading);
+  readonly timetableColorsError = computed(() => this.timetableColorsRequestStateSignal().error);
 
   constructor() {
     this.restoreAuthFromStorage();
@@ -75,7 +84,7 @@ export class SomaraSignalStore {
 
     try {
       const response = await firstValueFrom(
-        this.http.post<AuthResponseDto>(`${this.apiBasePath}/auth/register`, request),
+        this.http.post<AuthResponseDto>(`${apiBasePath}/auth/register`, request),
       );
       this.setAuthResponse(response);
       this.authRequestStateSignal.set({ loading: false, error: null });
@@ -94,7 +103,7 @@ export class SomaraSignalStore {
 
     try {
       const response = await firstValueFrom(
-        this.http.post<AuthResponseDto>(`${this.apiBasePath}/auth/login`, request),
+        this.http.post<AuthResponseDto>(`${apiBasePath}/auth/login`, request),
       );
       this.setAuthResponse(response);
       this.authRequestStateSignal.set({ loading: false, error: null });
@@ -111,7 +120,7 @@ export class SomaraSignalStore {
   logout(): void {
     this.setAuthResponse(null);
     this.teachersSignal.set([]);
-    this.scheduleEntriesSignal.set([]);
+    this.timetableEntryResponsesSignal.set([]);
     this.authRequestStateSignal.set({ loading: false, error: null });
   }
 
@@ -121,7 +130,7 @@ export class SomaraSignalStore {
     try {
       const response = await firstValueFrom(
         this.http.get<TeacherResponseDto[]>(
-          `${this.apiBasePath}/teachers`,
+          `${apiBasePath}/teachers`,
           this.authOptions(),
         ),
       );
@@ -143,7 +152,7 @@ export class SomaraSignalStore {
     try {
       const response = await firstValueFrom(
         this.http.get<TeacherResponseDto>(
-          `${this.apiBasePath}/teachers/${id}`,
+          `${apiBasePath}/teachers/${id}`,
           this.authOptions(),
         ),
       );
@@ -159,14 +168,19 @@ export class SomaraSignalStore {
     }
   }
 
-  async createTeacher(request: TeacherRequestDto): Promise<TeacherResponseDto> {
+  async createTeacher(request: CreateTeacherRequestDto): Promise<TeacherResponseDto> {
     this.teachersRequestStateSignal.set({ loading: true, error: null });
 
     try {
+      const payload = new FormData();
+      payload.append('name', request.name);
+      payload.append('description', request.description);
+      payload.append('profileImage', request.profileImage);
+
       const response = await firstValueFrom(
         this.http.post<TeacherResponseDto>(
-          `${this.apiBasePath}/teachers`,
-          request,
+          `${apiBasePath}/teachers`,
+          payload,
           this.authOptions(),
         ),
       );
@@ -188,7 +202,7 @@ export class SomaraSignalStore {
     try {
       const response = await firstValueFrom(
         this.http.put<TeacherResponseDto>(
-          `${this.apiBasePath}/teachers/${id}`,
+          `${apiBasePath}/teachers/${id}`,
           request,
           this.authOptions(),
         ),
@@ -211,7 +225,7 @@ export class SomaraSignalStore {
     try {
       await firstValueFrom(
         this.http.delete<void>(
-          `${this.apiBasePath}/teachers/${id}`,
+          `${apiBasePath}/teachers/${id}`,
           this.authOptions(),
         ),
       );
@@ -226,21 +240,21 @@ export class SomaraSignalStore {
     }
   }
 
-  async loadScheduleEntries(): Promise<ScheduleEntryResponseDto[]> {
-    this.scheduleRequestStateSignal.set({ loading: true, error: null });
+  async loadTimetableEntries(): Promise<TimetableEntryResponseDto[]> {
+    this.timetableRequestStateSignal.set({ loading: true, error: null });
 
     try {
       const response = await firstValueFrom(
-        this.http.get<ScheduleEntryResponseDto[]>(
-          `${this.apiBasePath}/schedule-entries`,
+        this.http.get<TimetableEntryResponseDto[]>(
+          `${apiBasePath}/timetable-entries`,
           this.authOptions(),
         ),
       );
-      this.scheduleEntriesSignal.set(response);
-      this.scheduleRequestStateSignal.set({ loading: false, error: null });
+      this.timetableEntryResponsesSignal.set(response);
+      this.timetableRequestStateSignal.set({ loading: false, error: null });
       return response;
     } catch (error) {
-      this.scheduleRequestStateSignal.set({
+      this.timetableRequestStateSignal.set({
         loading: false,
         error: this.toErrorMessage(error),
       });
@@ -248,21 +262,21 @@ export class SomaraSignalStore {
     }
   }
 
-  async getScheduleEntryById(id: number): Promise<ScheduleEntryResponseDto> {
-    this.scheduleRequestStateSignal.set({ loading: true, error: null });
+  async loadTimetableEntryColors(): Promise<TimetableEntryColorDto[]> {
+    this.timetableColorsRequestStateSignal.set({ loading: true, error: null });
 
     try {
       const response = await firstValueFrom(
-        this.http.get<ScheduleEntryResponseDto>(
-          `${this.apiBasePath}/schedule-entries/${id}`,
+        this.http.get<TimetableEntryColorDto[]>(
+          `${apiBasePath}/timetable-entries/colors`,
           this.authOptions(),
         ),
       );
-      this.upsertScheduleEntry(response);
-      this.scheduleRequestStateSignal.set({ loading: false, error: null });
+      this.timetableEntryColorsSignal.set(response);
+      this.timetableColorsRequestStateSignal.set({ loading: false, error: null });
       return response;
     } catch (error) {
-      this.scheduleRequestStateSignal.set({
+      this.timetableColorsRequestStateSignal.set({
         loading: false,
         error: this.toErrorMessage(error),
       });
@@ -270,22 +284,21 @@ export class SomaraSignalStore {
     }
   }
 
-  async createScheduleEntry(request: ScheduleEntryRequestInput): Promise<ScheduleEntryResponseDto> {
-    this.scheduleRequestStateSignal.set({ loading: true, error: null });
+  async getTimetableEntryById(id: number): Promise<TimetableEntryResponseDto> {
+    this.timetableRequestStateSignal.set({ loading: true, error: null });
 
     try {
       const response = await firstValueFrom(
-        this.http.post<ScheduleEntryResponseDto>(
-          `${this.apiBasePath}/schedule-entries`,
-          this.toScheduleEntryRequestDto(request),
+        this.http.get<TimetableEntryResponseDto>(
+          `${apiBasePath}/timetable-entries/${id}`,
           this.authOptions(),
         ),
       );
-      this.scheduleEntriesSignal.update((entries) => [...entries, response]);
-      this.scheduleRequestStateSignal.set({ loading: false, error: null });
+      this.upsertTimetableEntry(response);
+      this.timetableRequestStateSignal.set({ loading: false, error: null });
       return response;
     } catch (error) {
-      this.scheduleRequestStateSignal.set({
+      this.timetableRequestStateSignal.set({
         loading: false,
         error: this.toErrorMessage(error),
       });
@@ -293,25 +306,48 @@ export class SomaraSignalStore {
     }
   }
 
-  async updateScheduleEntry(
+  async createTimetableEntry(request: TimetableEntryRequestInput): Promise<TimetableEntryResponseDto> {
+    this.timetableRequestStateSignal.set({ loading: true, error: null });
+
+    try {
+      const response = await firstValueFrom(
+        this.http.post<TimetableEntryResponseDto>(
+          `${apiBasePath}/timetable-entries`,
+          this.toTimetableEntryRequestDto(request),
+          this.authOptions(),
+        ),
+      );
+      this.timetableEntryResponsesSignal.update((entries) => [...entries, response]);
+      this.timetableRequestStateSignal.set({ loading: false, error: null });
+      return response;
+    } catch (error) {
+      this.timetableRequestStateSignal.set({
+        loading: false,
+        error: this.toErrorMessage(error),
+      });
+      throw error;
+    }
+  }
+
+  async updateTimetableEntry(
     id: number,
-    request: ScheduleEntryRequestInput,
-  ): Promise<ScheduleEntryResponseDto> {
-    this.scheduleRequestStateSignal.set({ loading: true, error: null });
+    request: TimetableEntryRequestInput,
+  ): Promise<TimetableEntryResponseDto> {
+    this.timetableRequestStateSignal.set({ loading: true, error: null });
 
     try {
       const response = await firstValueFrom(
-        this.http.put<ScheduleEntryResponseDto>(
-          `${this.apiBasePath}/schedule-entries/${id}`,
-          this.toScheduleEntryRequestDto(request),
+        this.http.put<TimetableEntryResponseDto>(
+          `${apiBasePath}/timetable-entries/${id}`,
+          this.toTimetableEntryRequestDto(request),
           this.authOptions(),
         ),
       );
-      this.upsertScheduleEntry(response);
-      this.scheduleRequestStateSignal.set({ loading: false, error: null });
+      this.upsertTimetableEntry(response);
+      this.timetableRequestStateSignal.set({ loading: false, error: null });
       return response;
     } catch (error) {
-      this.scheduleRequestStateSignal.set({
+      this.timetableRequestStateSignal.set({
         loading: false,
         error: this.toErrorMessage(error),
       });
@@ -319,20 +355,20 @@ export class SomaraSignalStore {
     }
   }
 
-  async deleteScheduleEntry(id: number): Promise<void> {
-    this.scheduleRequestStateSignal.set({ loading: true, error: null });
+  async deleteTimetableEntry(id: number): Promise<void> {
+    this.timetableRequestStateSignal.set({ loading: true, error: null });
 
     try {
       await firstValueFrom(
         this.http.delete<void>(
-          `${this.apiBasePath}/schedule-entries/${id}`,
+          `${apiBasePath}/timetable-entries/${id}`,
           this.authOptions(),
         ),
       );
-      this.scheduleEntriesSignal.update((entries) => entries.filter((entry) => entry.id !== id));
-      this.scheduleRequestStateSignal.set({ loading: false, error: null });
+      this.timetableEntryResponsesSignal.update((entries) => entries.filter((entry) => entry.id !== id));
+      this.timetableRequestStateSignal.set({ loading: false, error: null });
     } catch (error) {
-      this.scheduleRequestStateSignal.set({
+      this.timetableRequestStateSignal.set({
         loading: false,
         error: this.toErrorMessage(error),
       });
@@ -343,7 +379,8 @@ export class SomaraSignalStore {
   clearErrors(): void {
     this.authRequestStateSignal.update((state) => ({ ...state, error: null }));
     this.teachersRequestStateSignal.update((state) => ({ ...state, error: null }));
-    this.scheduleRequestStateSignal.update((state) => ({ ...state, error: null }));
+    this.timetableRequestStateSignal.update((state) => ({ ...state, error: null }));
+    this.timetableColorsRequestStateSignal.update((state) => ({ ...state, error: null }));
   }
 
   private authOptions(): { headers?: HttpHeaders } {
@@ -430,8 +467,8 @@ export class SomaraSignalStore {
     });
   }
 
-  private upsertScheduleEntry(entry: ScheduleEntryResponseDto): void {
-    this.scheduleEntriesSignal.update((entries) => {
+  private upsertTimetableEntry(entry: TimetableEntryResponseDto): void {
+    this.timetableEntryResponsesSignal.update((entries) => {
       const existingIndex = entries.findIndex((existingEntry) => existingEntry.id === entry.id);
 
       if (existingIndex === -1) {
@@ -444,7 +481,7 @@ export class SomaraSignalStore {
     });
   }
 
-  private toScheduleEntryRequestDto(request: ScheduleEntryRequestInput): ScheduleEntryRequestDto {
+  private toTimetableEntryRequestDto(request: TimetableEntryRequestInput): TimetableEntryRequestDto {
     return {
       name: request.name,
       start: this.toIsoString(request.start),

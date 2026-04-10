@@ -33,7 +33,12 @@ import { TimetableEntryComponent } from './timetable-entry/timetable-entry';
 export class Timetable {
   private readonly store = inject(SomaraSignalStore);
 
-  readonly timeOfDaySections: ReadonlyArray<{ key: TimeOfDay; label: string; icon: string; backgroundColor: string }> = [
+  readonly timeOfDaySections: ReadonlyArray<{
+    key: TimeOfDay;
+    label: string;
+    icon: string;
+    backgroundColor: string
+  }> = [
     { key: 'morning', label: 'Morgens', icon: 'wb_twilight', backgroundColor: 'var(--somara-time-morning-bg)' },
     { key: 'midday', label: 'Mittags', icon: 'wb_sunny', backgroundColor: 'var(--somara-time-midday-bg)' },
     { key: 'afternoon', label: 'Nachmittags', icon: 'wb_twilight', backgroundColor: 'var(--somara-time-afternoon-bg)' },
@@ -52,16 +57,16 @@ export class Timetable {
   }));
 
   readonly timetable = this.store.timetableEntries;
-  readonly isScheduleLoading = this.store.isScheduleLoading;
-  readonly scheduleError = this.store.scheduleError;
+  readonly isTimetableLoading = this.store.isTimetableLoading;
+  readonly timetableError = this.store.timetableError;
 
   constructor() {
-    void this.reloadScheduleEntries();
+    void this.reloadTimetableEntries();
   }
 
-  async reloadScheduleEntries(): Promise<void> {
+  async reloadTimetableEntries(): Promise<void> {
     try {
-      await this.store.loadScheduleEntries();
+      await this.store.loadTimetableEntries();
     } catch {
       // Error state is already set in store and shown in the template.
     }

@@ -1,6 +1,9 @@
+import { ScheduleEntryLevel } from '../../core/models/timetable-entry.dto';
+
 export interface Teacher {
   id: number;
   name: string;
+  description?: string | null;
 }
 
 export interface TimetableEntry {
@@ -8,7 +11,7 @@ export interface TimetableEntry {
   start: Date;
   end: Date;
   color: string;
-  level: string;
+  level: ScheduleEntryLevel;
   teacher: Teacher;
 }
 
