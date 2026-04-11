@@ -1,0 +1,50 @@
+.admin-tag {
+  display: inline-flex;
+  min-height: 1.35rem;
+  align-items: center;
+  border: 1px solid var(--admin-tag-border);
+  background-color: var(--admin-tag-bg);
+  border-radius: 999px;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  color: var(--admin-muted-text);
+}
+
+.admin-role-badge {
+  display: inline-flex;
+  min-height: 1.65rem;
+  min-width: 4.6rem;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid var(--admin-role-border);
+  background-color: var(--admin-role-bg);
+  color: var(--admin-role-text);
+  border-radius: 999px;
+  padding: 0 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.admin-role-badge--admin {
+  border-color: var(--admin-role-admin-border);
+  background-color: var(--admin-role-admin-bg);
+}
+
+.admin-user-avatar {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 999px;
+  border: 2px solid var(--admin-user-avatar-border);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.admin-user-avatar--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--admin-user-avatar-bg);
+  color: var(--admin-muted-text);
+  font-size: 1rem;
+  font-weight: 700;
+}

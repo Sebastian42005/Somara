@@ -1,0 +1,14 @@
+<section class="mt-5 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(12.5rem,1fr))]">
+  @for (card of cards(); track card.key) {
+    <article [class]="'admin-stat-card admin-stat-card--' + card.key">
+      <div class="admin-stat-icon">
+        <mat-icon>{{ card.icon }}</mat-icon>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="admin-stat-label">{{ card.label }}</span>
+        <strong class="admin-stat-value">{{ card.value }}</strong>
+      </div>
+    </article>
+  }
+</section>

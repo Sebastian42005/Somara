@@ -1,0 +1,55 @@
+<section class="mt-8">
+  <h5 class="mb-3">User-Verwaltung</h5>
+
+  @if (isAdminUsersLoading()) {
+    <p class="text-sm text-[var(--somara-text)]/80">User werden geladen...</p>
+  } @else if (users().length === 0) {
+    <p class="text-sm text-[var(--somara-text)]/80">Noch keine User vorhanden.</p>
+  } @else {
+    <div class="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(17rem,1fr))]">
+      @for (user of users(); track user.id) {
+        <article class="flex items-center gap-3 rounded-[0.85rem] border-2 border-[var(--admin-card-border)] bg-[var(--admin-card-bg)] p-3">
+          @if (shouldShowProfileImage(user)) {
+            <img
+              class="admin-user-avatar"
+              [src]="getProfileImageUrl(user.id)"
+              [alt]="user.username + ' Profilbild'"
+              (error)="onProfileImageError(user.id)" />
+          } @else {
+            <div class="admin-user-avatar admin-user-avatar--fallback" aria-hidden="true">
+              {{ getUserInitial(user.username) }}
+            </div>
+          }
+
+          <div class="flex flex-1 flex-col gap-1">
+            <div class="inline-flex flex-wrap items-center gap-2">
+              <strong class="break-all">{{ user.username }}</strong>
+              @if (isCurrentUser(user)) {
+                <span class="admin-tag">Du</span>
+              }
+            </div>
+
+            <div class="inline-flex flex-wrap items-center gap-2">
+              <span class="admin-role-badge" [class.admin-role-badge--admin]="user.role === 'ADMIN'">
+                {{ user.role }}
+              </span>
+
+              <span class="text-[0.82rem] text-[var(--admin-muted-text)]">
+                ID: {{ user.id }}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="button-base button-stroked min-h-9 min-w-9 px-2"
+            [disabled]="isBusy()"
+            (click)="onEditUserClick(user.id)"
+            aria-label="User bearbeiten">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </article>
+      }
+    </div>
+  }
+</section>

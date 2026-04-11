@@ -1,0 +1,46 @@
+<section class="mt-8">
+  <h5 class="mb-3">Stundenplan-Übersicht</h5>
+
+  @if (isTimetableLoading()) {
+    <p class="text-sm text-[var(--somara-text)]/80">Einträge werden geladen...</p>
+  } @else if (overviewEntries().length === 0) {
+    <p class="text-sm text-[var(--somara-text)]/80">Noch keine Stundenplan-Einträge vorhanden.</p>
+  } @else {
+    <div class="flex flex-col gap-[0.65rem]">
+      @for (entry of overviewEntries(); track entry.id) {
+        <article class="grid items-center gap-x-3 gap-y-2 rounded-[0.85rem] border-2 border-[var(--admin-card-border)] bg-[var(--admin-card-bg)] px-[0.8rem] py-[0.65rem] [grid-template-columns:auto_1fr] sm:[grid-template-columns:auto_minmax(9rem,1.2fr)_minmax(8rem,1.2fr)_minmax(9rem,1.4fr)_auto_auto]">
+          <span class="row-span-4 h-full w-[0.65rem] rounded-full sm:row-span-1 sm:h-[2.35rem]" [ngStyle]="{ 'background-color': entry.yogaClass.color }"></span>
+
+          <div class="flex flex-col gap-px">
+            <strong>{{ entry.start | date:'dd.MM.yyyy' }}</strong>
+            <span class="text-[0.8rem] text-[var(--admin-muted-text)]">{{ entry.start | date:'HH:mm' }} - {{ entry.end | date:'HH:mm' }}</span>
+          </div>
+
+          <div class="inline-flex items-center gap-2">
+            <mat-icon>self_improvement</mat-icon>
+            <span class="text-[0.8rem] text-[var(--admin-muted-text)]">{{ entry.level }}</span>
+          </div>
+
+          <div class="inline-flex items-center gap-2">
+            <app-profile-picture [teacher]="entry.teacher"></app-profile-picture>
+            <span>{{ entry.teacher.name }}</span>
+          </div>
+
+          <div class="inline-flex items-center gap-2">
+            <mat-icon>hourglass_bottom</mat-icon>
+            <span>{{ getDurationInMinutes(entry) }} Min</span>
+          </div>
+
+          <button
+            type="button"
+            class="button-base button-stroked min-h-9 min-w-9 px-2"
+            [disabled]="isBusy()"
+            (click)="onEditEntryClick(entry)"
+            aria-label="Eintrag bearbeiten">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </article>
+      }
+    </div>
+  }
+</section>

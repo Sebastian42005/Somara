@@ -1,0 +1,45 @@
+<section class="mt-8">
+  <h5 class="mb-3">Klassen-Übersicht</h5>
+
+  @if (isClassesLoading()) {
+    <p class="text-sm text-[var(--somara-text)]/80">Klassen werden geladen...</p>
+  } @else if (classes().length === 0) {
+    <p class="text-sm text-[var(--somara-text)]/80">Noch keine Klassen vorhanden.</p>
+  } @else {
+    <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      @for (classItem of classes(); track classItem.id) {
+        <article class="grid grid-cols-[auto_auto_1fr_auto] items-center gap-3 rounded-[0.85rem] border-2 border-[var(--admin-card-border)] bg-[var(--admin-card-bg)] p-3">
+          <span
+            class="h-[3.2rem] w-[0.65rem] rounded-full"
+            [ngStyle]="{ 'background-color': classItem.color }"
+            aria-hidden="true"></span>
+
+          @if (classItem.hasImage) {
+            <img
+              class="h-[3.2rem] w-[3.2rem] shrink-0 rounded-xl border-2 border-[var(--admin-class-image-border)] object-cover"
+              [src]="getClassImageUrl(classItem.id)"
+              [alt]="classItem.name + ' Bild'" />
+          } @else {
+            <div class="inline-flex h-[3.2rem] w-[3.2rem] shrink-0 items-center justify-center rounded-xl border-2 border-[var(--admin-class-image-border)] bg-[var(--admin-class-image-bg)] text-[var(--admin-class-image-icon)]" aria-hidden="true">
+              <mat-icon>school</mat-icon>
+            </div>
+          }
+
+          <div class="flex flex-col gap-1">
+            <strong>{{ classItem.name }}</strong>
+            <span class="admin-line-clamp-3 text-[0.82rem] text-[var(--admin-muted-text-soft)]">{{ classItem.description }}</span>
+          </div>
+
+          <button
+            type="button"
+            class="button-base button-stroked min-h-9 min-w-9 px-2"
+            [disabled]="isBusy()"
+            (click)="onEditClassClick(classItem.id)"
+            aria-label="Klasse bearbeiten">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </article>
+      }
+    </div>
+  }
+</section>

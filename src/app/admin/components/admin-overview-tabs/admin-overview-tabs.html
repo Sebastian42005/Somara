@@ -1,0 +1,37 @@
+<div class="mt-4 flex flex-wrap gap-[0.65rem]">
+  <button
+    type="button"
+    class="button-base"
+    [class.button-raised]="activeOverview() === 'teachers'"
+    [class.button-stroked]="activeOverview() !== 'teachers'"
+    (click)="selectOverview('teachers')">
+    Lehrer-Übersicht
+  </button>
+
+  <button
+    type="button"
+    class="button-base"
+    [class.button-raised]="activeOverview() === 'timetable'"
+    [class.button-stroked]="activeOverview() !== 'timetable'"
+    (click)="selectOverview('timetable')">
+    Stundenplan-Übersicht
+  </button>
+
+  <button
+    type="button"
+    class="button-base"
+    [class.button-raised]="activeOverview() === 'classes'"
+    [class.button-stroked]="activeOverview() !== 'classes'"
+    (click)="selectOverview('classes')">
+    Klassen-Übersicht
+  </button>
+
+  <button
+    type="button"
+    class="button-base"
+    [class.button-raised]="activeOverview() === 'users'"
+    [class.button-stroked]="activeOverview() !== 'users'"
+    (click)="selectOverview('users')">
+    User-Verwaltung
+  </button>
+</div>

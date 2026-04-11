@@ -1,0 +1,42 @@
+<section class="mt-8">
+  <h5 class="mb-3">Alle Lehrer</h5>
+
+  @if (isTeachersLoading()) {
+    <p class="text-sm text-[var(--somara-text)]/80">Lehrer werden geladen...</p>
+  } @else if (teacherSummaries().length === 0) {
+    <p class="text-sm text-[var(--somara-text)]/80">Noch keine Lehrer vorhanden.</p>
+  } @else {
+    <div class="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(14rem,1fr))]">
+      @for (summary of teacherSummaries(); track summary.teacher.id) {
+        <article class="flex items-center gap-3 rounded-[0.85rem] border-2 border-[var(--admin-card-border)] bg-[var(--admin-card-bg)] p-3">
+          <app-profile-picture [teacher]="summary.teacher"></app-profile-picture>
+
+          <div class="flex flex-1 flex-col gap-0.5">
+            <strong>{{ summary.teacher.name }}</strong>
+            @if (summary.teacher.description) {
+              <span class="admin-line-clamp-2 text-[0.82rem] text-[var(--admin-muted-text)]">{{ summary.teacher.description }}</span>
+            }
+            <span class="text-[0.82rem] text-[var(--admin-muted-text)]">{{ summary.entryCount }} Einträge</span>
+
+            @if (summary.nextEntry) {
+              <span class="text-[0.82rem] text-[var(--admin-muted-text)]">
+                Nächster Termin: {{ summary.nextEntry.start | date:'dd.MM.yyyy HH:mm' }}
+              </span>
+            } @else {
+              <span class="text-[0.82rem] text-[var(--admin-muted-text)]">Noch kein geplanter Termin</span>
+            }
+          </div>
+
+          <button
+            type="button"
+            class="button-base button-stroked min-h-9 min-w-9 px-2"
+            [disabled]="isBusy()"
+            (click)="onEditTeacherClick(summary.teacher.id)"
+            aria-label="Lehrer bearbeiten">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </article>
+      }
+    </div>
+  }
+</section>
